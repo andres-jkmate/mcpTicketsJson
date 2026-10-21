@@ -1,0 +1,19 @@
+{
+  "descripcion": "Tools que se reenvían (lectura) y que se interceptan (escritura) por versión (design D6). Una tool que no está en ninguna lista se intercepta.",
+  "v1": {
+    "lectura": [
+      "user_info", "listar_tickets", "historial_ticket", "detalle_ticket", "agendas_ticket", "presupuestos_ticket",
+      "buscar_cliente", "listar_resultados_reclamo", "listar_categorias_mensaje_reclamo", "listar_origenes_mensaje",
+      "listar_desarrolladores", "listar_tipos_asignacion", "listar_tareas_desarrollador", "listar_tareas_responsable",
+      "listar_comentarios_tarea", "agenda_usuario", "agendas_disponibles"
+    ],
+    "escritura": [
+      "crear_ticket", "agregar_mensaje_ticket", "crear_tarea", "editar_tarea", "agregar_comentario_tarea",
+      "agendar_ticket", "mover_tarea_tablero"
+    ]
+  },
+  "v2": {
+    "lectura": ["obtener_contexto_ticket", "listar_tickets", "listar_tareas", "resumir_tickets"],
+    "escritura": ["crear_tarea", "actualizar_ticket"]
+  }
+}

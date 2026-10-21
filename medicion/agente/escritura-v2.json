@@ -1,0 +1,110 @@
+{
+  "descripcion": "Tools de escritura de la v2 con objetos compuestos (design D7). Solo existen en el arnés: se agregan a la lista de tools de la v2 y sus llamadas se interceptan.",
+  "tools": [
+    {
+      "name": "crear_tarea",
+      "description": "Crea una tarea de desarrollo de JKMate, opcionalmente vinculada a un ticket. La tarea se arma como un objeto compuesto: datos de la tarea, asignación, planificación y una descripción estructurada con el pedido y los criterios de aceptación. Las personas se indican con \"yo\", con { id } o con { nombre } para que el servidor las busque. Devuelve el id de la tarea creada.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tarea": {
+            "type": "object",
+            "properties": {
+              "nombre": { "type": "string", "maxLength": 200 },
+              "tipoId": { "type": "integer", "description": "Tipo de asignación. Omitir si no se conoce." },
+              "prioridad": { "type": "integer" }
+            },
+            "required": ["nombre"]
+          },
+          "asignacion": {
+            "type": "object",
+            "properties": {
+              "desarrollador": { "$ref": "#/$defs/personaRef" },
+              "responsable": { "$ref": "#/$defs/personaRef" }
+            },
+            "required": ["desarrollador"]
+          },
+          "planificacion": {
+            "type": "object",
+            "properties": {
+              "horasEstimadas": { "type": "integer", "minimum": 1 },
+              "fechaCompromiso": { "type": "string", "format": "date" }
+            }
+          },
+          "ticketId": { "type": "integer" },
+          "descripcion": {
+            "type": "object",
+            "properties": {
+              "pedido": { "type": "string" },
+              "objetivo": { "type": "string" },
+              "criteriosAceptacion": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+              "objetosAfectados": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "tipo": { "enum": ["tabla", "procedure", "formulario", "webservice", "reporte"] },
+                    "nombre": { "type": "string" },
+                    "accion": { "enum": ["crear", "modificar", "eliminar", "revisar"] }
+                  },
+                  "required": ["tipo", "nombre"]
+                }
+              }
+            },
+            "required": ["pedido", "criteriosAceptacion"]
+          }
+        },
+        "required": ["tarea", "asignacion", "descripcion"],
+        "$defs": {
+          "personaRef": {
+            "description": "Una persona: \"yo\", { id } si se conoce el código, o { nombre } para que el servidor la busque.",
+            "anyOf": [
+              { "const": "yo" },
+              { "type": "object", "properties": { "id": { "type": "integer" } }, "required": ["id"], "additionalProperties": false },
+              { "type": "object", "properties": { "nombre": { "type": "string" } }, "required": ["nombre"], "additionalProperties": false }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "actualizar_ticket",
+      "description": "Actualiza un ticket de JKMate: cambia prioridad, sistema o asignación, deja un mensaje, o ambas cosas en una sola llamada. Hay que indicar al menos cambios o mensaje. Las personas se indican con \"yo\", con { id } o con { nombre }.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ticketId": { "type": "integer" },
+          "cambios": {
+            "type": "object",
+            "properties": {
+              "prioridad": { "enum": ["BAJA", "MEDIA", "ALTA", "URGENTE", "CRITICA"] },
+              "sistema": { "enum": ["JK3", "JK2", "DESKTOP", "CRM"] },
+              "asignadoA": { "$ref": "#/$defs/personaRef" }
+            },
+            "minProperties": 1
+          },
+          "mensaje": {
+            "type": "object",
+            "properties": {
+              "texto": { "type": "string", "maxLength": 3000 },
+              "interno": { "type": "boolean", "default": false }
+            },
+            "required": ["texto"]
+          }
+        },
+        "required": ["ticketId"],
+        "anyOf": [{ "required": ["cambios"] }, { "required": ["mensaje"] }],
+        "$defs": {
+          "personaRef": {
+            "description": "Una persona: \"yo\", { id } si se conoce el código, o { nombre } para que el servidor la busque.",
+            "anyOf": [
+              { "const": "yo" },
+              { "type": "object", "properties": { "id": { "type": "integer" } }, "required": ["id"], "additionalProperties": false },
+              { "type": "object", "properties": { "nombre": { "type": "string" } }, "required": ["nombre"], "additionalProperties": false }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

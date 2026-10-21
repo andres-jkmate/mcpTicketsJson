@@ -1,0 +1,7 @@
+{
+  "descripcion": "Supuestos del estimador sin API (design D12). Son los mismos para las dos versiones. Si aparecen credenciales, la razón se calibra una vez con count_tokens.",
+  "razonCaracteresPorToken": 3.5,
+  "thinkingPorTurno": 300,
+  "respuestaFinal": 400,
+  "promptToolUse": 346
+}

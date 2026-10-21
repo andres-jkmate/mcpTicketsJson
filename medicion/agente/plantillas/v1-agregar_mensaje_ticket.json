@@ -1,0 +1,4 @@
+{
+  "descripcion": "Respuesta real de agregar_mensaje_ticket de la v1 (2026-10-20, mensaje 18673 en el ticket 75056). \"{id}\" se reemplaza por un id ficticio.",
+  "structuredContent": { "resultado": [{ "OK": 1, "ERROR_MSG": null, "COD_MENSAJE_CLIENTE": "{id}", "COD_RESULTADO_RECLAMO": 4 }] }
+}

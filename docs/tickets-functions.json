@@ -1,0 +1,294 @@
+[
+  {
+    "nombre": "listar_tickets",
+    "metodo": "PROC_GET_TICKETS_ADMIN_PORTAL",
+    "descripcion": "Listar tickets del usuario",
+    "CAMPO_USUARIO": "P_COD_USUARIO_RESPONSABLE",
+    "parametros": [
+      { "nombre": "P_COD_CLIENTE", "tipo": "Entero", "descripcion": "Código de cliente para filtrar" },
+      { "nombre": "P_NRO_TICKET", "tipo": "Entero", "descripcion": "Número de ticket puntual a buscar" },
+      { "nombre": "P_PRIORIDAD", "tipo": "Texto", "descripcion": "Prioridad exacta del ticket" },
+      { "nombre": "P_TIPO_SISTEMA", "tipo": "Texto", "descripcion": "Tipo de sistema origen del ticket" },
+      { "nombre": "P_FECHA_DESDE", "tipo": "Texto", "descripcion": "Fecha desde (ISO 8601)" },
+      { "nombre": "P_FECHA_HASTA", "tipo": "Texto", "descripcion": "Fecha hasta (ISO 8601)" },
+      { "nombre": "P_ORDEN_DESC", "tipo": "Booleano", "descripcion": "true = orden descendente por fecha (default), false = ascendente", "default": true },
+      { "nombre": "P_CANTIDAD", "tipo": "Entero", "descripcion": "Cantidad máxima de filas a devolver", "default": 100 },
+      { "nombre": "P_ESTADO", "tipo": "Texto", "descripcion": "Estado exacto del ticket" }
+    ]
+  },
+  {
+    "nombre": "historial_ticket",
+    "metodo": "PROC_GET_HITOS_TICKET_PORTAL",
+    "descripcion": "Historial de un ticket: mensajes intercambiados y eventos del sistema (cambios de estado, asignación, prioridad, tipo de sistema), en orden cronológico.",
+    "parametros": [
+      { "nombre": "P_COD_RECLAMO", "tipo": "Entero", "descripcion": "Código del ticket (COD_RECLAMO / NRO_TICKET devuelto por listar_tickets)", "requerido": true },
+      { "nombre": "P_SOLO_VISIBLE_CLIENTE", "tipo": "Booleano", "descripcion": "true = solo hitos/mensajes visibles para el cliente (oculta notas internas/privadas)", "default": false }
+    ]
+  },
+  {
+    "nombre": "detalle_ticket",
+    "metodo": "PROC_GET_INFO_TICKET_PORTAL",
+    "descripcion": "Detalle de un ticket puntual: estado, prioridad, tipo, usuario asignado, cliente, título, tipo de sistema, contacto, fecha de creación y de último cambio.",
+    "parametros": [
+      { "nombre": "P_COD_RECLAMO", "tipo": "Entero", "descripcion": "Código del ticket (COD_RECLAMO / NRO_TICKET devuelto por listar_tickets)", "requerido": true }
+    ]
+  },
+  {
+    "nombre": "agendas_ticket",
+    "metodo": "PROC_GET_AGENDAS_TICKET_ADMIN",
+    "descripcion": "Lista las agendas (visitas/eventos programados) asociadas a un ticket puntual.",
+    "parametros": [
+      { "nombre": "P_COD_RECLAMO", "tipo": "Entero", "descripcion": "Código del ticket (COD_RECLAMO / NRO_TICKET devuelto por listar_tickets)", "requerido": true }
+    ]
+  },
+  {
+    "nombre": "presupuestos_ticket",
+    "metodo": "PROC_GET_PRES_TICKET_PORTAL",
+    "descripcion": "Lista los presupuestos asociados a un ticket puntual.",
+    "parametros": [
+      { "nombre": "P_COD_RECLAMO", "tipo": "Entero", "descripcion": "Código del ticket (COD_RECLAMO / NRO_TICKET devuelto por listar_tickets)", "requerido": true }
+    ]
+  },
+  {
+    "nombre": "buscar_cliente",
+    "metodo": "PROC_GET_CLIENTES_X_NOMBRE",
+    "descripcion": "Busca clientes por nombre (o parte del nombre) para identificar su COD_CLIENTE — usar antes de crear_ticket cuando no se conoce de antemano el código del cliente. Si no se indica ningún nombre, devuelve los primeros 150 clientes que encuentre (sin filtrar).",
+    "parametros": [
+      { "nombre": "NOMBRE_ENTRADA", "tipo": "Texto", "descripcion": "Nombre o parte del nombre del cliente a buscar" }
+    ]
+  },
+  {
+    "nombre": "crear_ticket",
+    "metodo": "PROC_INSERT_MENSAJE_RECLAMO_JK3",
+    "descripcion": "Crea un ticket nuevo o agrega un mensaje/seguimiento a uno existente. Requiere el COD_CLIENTE del cliente destinatario — si no se conoce, buscarlo antes con buscar_cliente. Solo se crea un ticket NUEVO si cod_categoria_mensaje corresponde a una categoría que 'genera reclamos' (ver CAT_MENSAJE) y cod_resultado_reclamo es un código válido (>=0, ver RESULTADOS_RECLAMOS); si además se pasa cod_reclamo de un ticket ya existente, el mensaje se agrega como seguimiento a ESE ticket en vez de crear uno nuevo. Si la categoría no genera reclamos, solo queda guardado el mensaje, sin ticket.",
+    "CAMPO_USUARIO": "COD_USUARIO",
+    "parametros": [
+      { "nombre": "COD_CLIENTE", "tipo": "Entero", "descripcion": "Cliente al que pertenece el ticket/mensaje", "requerido": true },
+      { "nombre": "COD_CATEGORIA_MENSAJE", "tipo": "Entero", "descripcion": "Categoría del mensaje (debe 'generar reclamos' en CAT_MENSAJE para que se cree un ticket)", "requerido": true },
+      { "nombre": "MENSAJE", "tipo": "Texto", "descripcion": "Texto del mensaje / motivo del ticket", "requerido": true },
+      { "nombre": "TITULO", "tipo": "Texto", "descripcion": "Título del ticket (máx. 100 caracteres). Solo tiene efecto si esta llamada crea un ticket nuevo" },
+      { "nombre": "COD_RESULTADO_RECLAMO", "tipo": "Entero", "descripcion": "Código de resultado/estado inicial del ticket (ver RESULTADOS_RECLAMOS) - debe ser >=0 para que se cree el ticket" },
+      { "nombre": "COD_RECLAMO", "tipo": "Entero", "descripcion": "Si se indica un ticket YA existente, el mensaje se agrega como seguimiento a ese ticket en vez de crear uno nuevo" },
+      { "nombre": "COD_VENDEDOR", "tipo": "Entero", "descripcion": "Vendedor asociado" },
+      { "nombre": "COD_ENTIDAD", "tipo": "Entero", "descripcion": "Entidad/sucursal comercial asociada" },
+      { "nombre": "COD_EVENTO", "tipo": "Entero", "descripcion": "Evento asociado, si corresponde" },
+      { "nombre": "COD_ORIGEN_MENSAJE", "tipo": "Entero", "descripcion": "Origen del mensaje (ver ORIGENES_MENSAJES)" },
+      { "nombre": "COD_USUARIO_DESTINO", "tipo": "Entero", "descripcion": "Usuario al que se asigna el ticket" },
+      { "nombre": "COD_AREA_USUARIO", "tipo": "Entero", "descripcion": "Área del usuario destino" },
+      { "nombre": "COD_SUCURSAL", "tipo": "Entero", "descripcion": "Sucursal asociada" },
+      { "nombre": "COD_PROPUESTA", "tipo": "Entero", "descripcion": "Propuesta/presupuesto asociado" },
+      { "nombre": "COSTO_RECLAMO", "tipo": "Decimal", "descripcion": "Costo asociado al reclamo" },
+      { "nombre": "MOTIVO_ANULACION", "tipo": "Texto", "descripcion": "Motivo de anulación, si aplica" },
+      { "nombre": "FECHA_HORA_AGENDA", "tipo": "Texto", "descripcion": "Fecha/hora de agenda asociada (ISO 8601)" },
+      { "nombre": "COD_SERVICIO_SEPELIO", "tipo": "Entero", "descripcion": "Servicio de sepelio asociado, si corresponde" },
+      { "nombre": "SEMAFORO", "tipo": "Texto", "descripcion": "Estado de semáforo/prioridad visual del ticket" },
+      { "nombre": "CONTACTO", "tipo": "Texto", "descripcion": "Contacto asociado al ticket (máx. 100 caracteres)" },
+      { "nombre": "COD_PROCESO_SISTEMA", "tipo": "Entero", "descripcion": "Código de proceso de sistema origen, si corresponde" },
+      { "nombre": "TIPO_SISTEMA", "tipo": "Texto", "descripcion": "Tipo de sistema origen del ticket (máx. 40 caracteres)" },
+      { "nombre": "PRIORIDAD", "tipo": "Texto", "descripcion": "Prioridad inicial del ticket (máx. 15 caracteres)" },
+      { "nombre": "PEDIDO_NORMALIZADO", "tipo": "Texto", "descripcion": "Pedido/mensaje normalizado asociado al ticket" }
+    ]
+  },
+  { 
+    "nombre": "agregar_mensaje_ticket",
+    "metodo": "PROC_INS_MEN_TICKET_PORTAL",
+    "descripcion": "Agrega un mensaje/seguimiento a un ticket YA existente. En la misma llamada también puede, opcionalmente: reasignar el ticket a otro usuario (P_COD_USUARIO_DESTINO), cambiar su prioridad (P_NUEVA_PRIORIDAD), su tipo de sistema (P_NUEVO_TIPO_SISTEMA), o su estado/resultado (P_NUEVO_COD_RESULTADO_RECLAMO — solo permitido si el usuario autenticado es operador). Hay que indicar al menos uno de: mensaje, nueva prioridad, nuevo tipo de sistema o nuevo resultado.",
+    "CAMPO_USUARIO": "P_COD_USUARIO",
+    "parametros": [
+      { "nombre": "P_COD_RECLAMO", "tipo": "Entero", "descripcion": "Código del ticket (COD_RECLAMO / NRO_TICKET devuelto por listar_tickets)", "requerido": true },
+      { "nombre": "P_MENSAJE", "tipo": "Texto", "descripcion": "Texto del mensaje a agregar (máx. 3000 caracteres). Puede omitirse si solo se quiere cambiar prioridad, tipo de sistema o estado" },
+      { "nombre": "P_ES_INTERNO", "tipo": "Booleano", "descripcion": "true = nota interna (no visible para el cliente), false = mensaje normal", "default": false },
+      { "nombre": "P_COD_MENSAJE_RESPUESTA", "tipo": "Entero", "descripcion": "Si el mensaje responde a otro puntual del mismo ticket, código de ese mensaje (COD_MENSAJE_CLIENTE, ver historial_ticket)" },
+      { "nombre": "P_COD_USUARIO_DESTINO", "tipo": "Entero", "descripcion": "Si se indica, reasigna el ticket a este usuario" },
+      { "nombre": "P_NUEVA_PRIORIDAD", "tipo": "Texto", "descripcion": "Si se indica, cambia la prioridad del ticket a este valor" },
+      { "nombre": "P_NUEVO_TIPO_SISTEMA", "tipo": "Texto", "descripcion": "Si se indica, cambia el tipo de sistema del ticket a este valor" },
+      { "nombre": "P_NUEVO_COD_RESULTADO_RECLAMO", "tipo": "Entero", "descripcion": "Si se indica, cambia el estado/resultado del ticket (ver listar_resultados_reclamo) — solo permitido para usuarios operadores" },
+      { "nombre": "P_PEDIDO_NORMALIZADO", "tipo": "Texto", "descripcion": "Pedido/mensaje normalizado asociado al mensaje" }
+    ]
+  },
+  {
+    "nombre": "listar_resultados_reclamo",
+    "metodo": "PROC_GET_RESULTADOS_RECLAMOS",
+    "descripcion": "Catálogo de códigos de resultado/estado inicial válidos para usar en crear_ticket (parámetro COD_RESULTADO_RECLAMO). Incluye a qué ESTADOS_RECLAMOS (COD_ESTADO_RECLAMO) corresponde cada uno.",
+    "parametros": []
+  },
+  {
+    "nombre": "listar_categorias_mensaje_reclamo",
+    "metodo": "PROC_GET_CAT_MENSAJE_RECLAMO",
+    "descripcion": "Catálogo de categorías de mensaje que generan reclamos (tickets) — válidas para usar en crear_ticket (parámetro COD_CATEGORIA_MENSAJE). Solo incluye categorías con GENERA_RECLAMOS=1.",
+    "parametros": []
+  },
+  {
+    "nombre": "listar_origenes_mensaje",
+    "metodo": "PROC_GET_ORIGENES_MENSAJES",
+    "descripcion": "Catálogo de orígenes de mensaje — válidos para usar en crear_ticket (parámetro COD_ORIGEN_MENSAJE).",
+    "parametros": []
+  },
+  {
+    "nombre": "listar_desarrolladores",
+    "metodo": "PROC_GET_DES_X_TIPO",
+    "descripcion": "Lista los desarrolladores disponibles, para identificar su COD_DESARROLLADOR — usar antes de crear_tarea para asignarla al desarrollador correcto.",
+    "parametros": [
+      { "nombre": "SOLO_ANALISTAS", "tipo": "Booleano", "descripcion": "Si es true, lista solo los desarrolladores marcados como analistas. Si se omite, lista todos.", "default": false }
+    ]
+  },
+  {
+    "nombre": "listar_tipos_asignacion",
+    "metodo": "PROC_GET_TIPOS_ASIGNACIONES",
+    "descripcion": "Catálogo de tipos de asignación válidos para usar en crear_tarea (parámetro COD_TIPO_ASIGNACION_JK3).",
+    "parametros": []
+  },
+  {
+    "nombre": "crear_tarea",
+    "metodo": "SET_ASIGNACION_JK3",
+    "descripcion": "Crea una tarea (asignación) para un desarrollador. Puede asociarse a un ticket existente (un ticket puede tener 0, 1 o varias tareas) indicando nro_ticket, o crearse sin ticket asociado.",
+    "campoDesarrollador": "COD_DESARROLLADOR_CREA",
+    "parametros": [
+      { "nombre": "NOMBRE", "tipo": "Texto", "descripcion": "Nombre/título de la tarea (máx. 200 caracteres)", "requerido": true },
+      { "nombre": "COD_DESARROLLADOR", "tipo": "Entero", "descripcion": "Desarrollador al que se asigna la tarea (ver listar_desarrolladores)", "requerido": true },
+      { "nombre": "NRO_TICKET", "tipo": "Texto", "descripcion": "Ticket al que se asocia la tarea, si corresponde (COD_RECLAMO / NRO_TICKET devuelto por listar_tickets). Omitir si la tarea no está asociada a ningún ticket" },
+      { "nombre": "DESCRIPCION", "tipo": "Texto", "descripcion": "Descripción detallada de la tarea" },
+      { "nombre": "HORAS_ESTIMADAS", "tipo": "Entero", "descripcion": "Horas estimadas para completar la tarea" },
+      { "nombre": "PRIORIDAD", "tipo": "Entero", "descripcion": "Prioridad de la tarea" },
+      { "nombre": "ES_DESCANSO", "tipo": "Booleano", "descripcion": "true = la asignación es un descanso/tiempo no laborable, no una tarea real", "default": false },
+      { "nombre": "COD_TIPO_ASIGNACION_JK3", "tipo": "Entero", "descripcion": "Tipo de asignación (ver listar_tipos_asignacion)" },
+      { "nombre": "COD_PROCESO_SISTEMA", "tipo": "Entero", "descripcion": "Proceso de sistema origen, si corresponde" },
+      { "nombre": "COD_EMPRESA", "tipo": "Entero", "descripcion": "Empresa asociada a la tarea" },
+      { "nombre": "COD_DESARROLLADOR_RESP", "tipo": "Entero", "descripcion": "Desarrollador responsable de supervisar la tarea, si aplica" },
+      { "nombre": "COD_DESARROLLADOR_CREA", "tipo": "Entero", "descripcion": "Desarrollador que crea la tarea. Se resuelve automáticamente del usuario autenticado en el MCP (USUARIOS.COD_DESARROLLADOR) — no se puede indicar manualmente.", "requerido": true },
+      { "nombre": "FECHA_COMPROMISO", "tipo": "Texto", "descripcion": "Fecha comprometida de entrega de la tarea (ISO 8601, ej. '2026-09-20'). Opcional." }
+    ]
+  },
+  {
+    "nombre": "editar_tarea",
+    "metodo": "UDP_ASIGNACION_JK3",
+    "descripcion": "Edita una tarea (asignación) ya existente — análogo de crear_tarea para modificar sus datos (ver COD_ASIGNACION_JK3, devuelto por crear_tarea / listar_tareas_desarrollador).",
+    "campoDesarrollador": "COD_DESARROLLADOR_MOD",
+    "parametros": [
+      { "nombre": "COD_ASIGNACION_JK3", "tipo": "Entero", "descripcion": "Código de la tarea (COD_ASIGNACION_JK3, ver crear_tarea / listar_tareas_desarrollador) a editar", "requerido": true },
+      { "nombre": "NOMBRE", "tipo": "Texto", "descripcion": "Nombre/título de la tarea (máx. 200 caracteres)", "requerido": true },
+      { "nombre": "COD_DESARROLLADOR", "tipo": "Entero", "descripcion": "Desarrollador al que se asigna la tarea (ver listar_desarrolladores)", "requerido": true },
+      { "nombre": "NRO_TICKET", "tipo": "Texto", "descripcion": "Ticket al que se asocia la tarea, si corresponde (COD_RECLAMO / NRO_TICKET devuelto por listar_tickets). Omitir si la tarea no está asociada a ningún ticket" },
+      { "nombre": "DESCRIPCION", "tipo": "Texto", "descripcion": "Descripción detallada de la tarea" },
+      { "nombre": "HORAS_ESTIMADAS", "tipo": "Entero", "descripcion": "Horas estimadas para completar la tarea" },
+      { "nombre": "PRIORIDAD", "tipo": "Entero", "descripcion": "Prioridad de la tarea" },
+      { "nombre": "ES_DESCANSO", "tipo": "Booleano", "descripcion": "true = la asignación es un descanso/tiempo no laborable, no una tarea real", "default": false },
+      { "nombre": "COD_TIPO_ASIGNACION_JK3", "tipo": "Entero", "descripcion": "Tipo de asignación (ver listar_tipos_asignacion)" },
+      { "nombre": "COD_PROCESO_SISTEMA", "tipo": "Entero", "descripcion": "Proceso de sistema origen, si corresponde" },
+      { "nombre": "COD_EMPRESA", "tipo": "Entero", "descripcion": "Empresa asociada a la tarea" },
+      { "nombre": "COD_DESARROLLADOR_RESP", "tipo": "Entero", "descripcion": "Desarrollador responsable de supervisar la tarea, si aplica" },
+      { "nombre": "COD_DESARROLLADOR_MOD", "tipo": "Entero", "descripcion": "Desarrollador que edita la tarea. Se resuelve automáticamente del usuario autenticado en el MCP (USUARIOS.COD_DESARROLLADOR) — no se puede indicar manualmente.", "requerido": true },
+      { "nombre": "FECHA_COMPROMISO", "tipo": "Texto", "descripcion": "Fecha comprometida de entrega de la tarea (ISO 8601, ej. '2026-09-20'). Opcional." }
+    ]
+  },
+  {
+    "nombre": "listar_tareas_desarrollador",
+    "metodo": "GET_ASIGNACION_DESARROLLADORES",
+    "descripcion": "Lista las tareas (asignaciones) de un desarrollador dentro de un rango de fechas, o busca una tarea puntual por su código (IN_COD_ASIGNACION_JK3).",
+    "campoDesarrollador": "IN_COD_DESARROLLADOR",
+    "parametros": [
+      { "nombre": "FECHA_INICIO_D", "tipo": "Texto", "descripcion": "Fecha/hora desde (ISO 8601, ej. '2026-08-20 00:00')", "requerido": true },
+      { "nombre": "FECHA_INICIO_H", "tipo": "Texto", "descripcion": "Fecha/hora hasta (ISO 8601, ej. '2026-08-20 23:59')", "requerido": true },
+      { "nombre": "IN_COD_DESARROLLADOR", "tipo": "Entero", "descripcion": "Desarrollador cuyas tareas se listan (ver listar_desarrolladores). Si se omite, se usa el desarrollador del usuario autenticado ('mis tareas'); se puede indicar explícito para consultar las de otro desarrollador." },
+      { "nombre": "IN_TERMINADAS", "tipo": "Booleano", "descripcion": "true = incluir también tareas terminadas, false = solo tareas pendientes", "default": false },
+      { "nombre": "IN_PRIORIDAD", "tipo": "Entero", "descripcion": "Filtrar por prioridad exacta de la tarea" },
+      { "nombre": "IN_COD_ASIGNACION_JK3", "tipo": "Entero", "descripcion": "Código de una tarea/asignación puntual a buscar (COD_ASIGNACION_JK3)" }
+    ]
+  },
+  {
+    "nombre": "listar_tareas_responsable",
+    "metodo": "GET_ASIGNACION",
+    "descripcion": "Lista las tareas (asignaciones) filtrando por el desarrollador RESPONSABLE (supervisor) indicado en IN_COD_DESARROLLADOR_RESP — distinto de listar_tareas_desarrollador, que filtra por el desarrollador ASIGNADO a la tarea. Una tarea puede tener un desarrollador asignado distinto de su responsable. Ningún parámetro se completa automáticamente con el usuario de la sesión: hay que indicar explícitamente el código de desarrollador que corresponda.",
+    "parametros": [
+      { "nombre": "FECHA_DESDE", "tipo": "Texto", "descripcion": "Fecha/hora desde para filtrar asignaciones (ISO 8601)" },
+      { "nombre": "FECHA_HASTA", "tipo": "Texto", "descripcion": "Fecha/hora hasta para filtrar asignaciones (ISO 8601)" },
+      { "nombre": "COD_DESARROLLADOR", "tipo": "Entero", "descripcion": "Filtra por el desarrollador ASIGNADO a la tarea (no el responsable) — ver listar_desarrolladores" },
+      { "nombre": "IN_ESTADO_ASIGNACION", "tipo": "Texto", "descripcion": "Filtra por estado de la asignación" },
+      { "nombre": "DESARROLLADOR_LOG", "tipo": "Booleano", "descripcion": "Si es true, incluye información de log/auditoría de la asignación", "default": false },
+      { "nombre": "INCLUIR_DESCANSO", "tipo": "Booleano", "descripcion": "true = incluir también las asignaciones marcadas como descanso/tiempo no laborable", "default": false },
+      { "nombre": "IN_PRIORIDAD", "tipo": "Entero", "descripcion": "Filtra por prioridad exacta de la tarea" },
+      { "nombre": "IN_COD_DESARROLLADOR_RESP", "tipo": "Entero", "descripcion": "Desarrollador responsable (supervisor) cuyas tareas se listan — ver listar_desarrolladores. Hay que indicarlo explícitamente, no se autocompleta con el usuario de la sesión." },
+      { "nombre": "IN_COD_EMPRESA", "tipo": "Entero", "descripcion": "Filtra por empresa asociada a la tarea" },
+      { "nombre": "MODULO", "tipo": "Texto", "descripcion": "Filtra por módulo del sistema asociado a la tarea" },
+      { "nombre": "FECHA_DESDE_FIN", "tipo": "Texto", "descripcion": "Fecha/hora desde de finalización de la asignación (ISO 8601)" },
+      { "nombre": "FECHA_HASTA_FIN", "tipo": "Texto", "descripcion": "Fecha/hora hasta de finalización de la asignación (ISO 8601)" },
+      { "nombre": "PCON_DEP_ACTIVAS", "tipo": "Booleano", "descripcion": "true = considerar solo dependencias activas", "default": false },
+      { "nombre": "FILTRO_TIPO_ASIGNACIONES", "tipo": "Texto", "descripcion": "Filtro de tipo(s) de asignación a incluir (ver listar_tipos_asignacion)" }
+    ]
+  },
+  {
+    "nombre": "agregar_comentario_tarea",
+    "metodo": "PROC_INSERT_MENSAJES_ASIGNACION",
+    "descripcion": "Agrega un comentario/mensaje a una tarea (asignación) ya existente.",
+    "CAMPO_USUARIO": "COD_USUARIO",
+    "campoDesarrollador": "COD_DESARROLLADOR",
+    "parametros": [
+      { "nombre": "COD_ASIGNACION_JK3", "tipo": "Entero", "descripcion": "Código de la tarea (COD_ASIGNACION_JK3, ver crear_tarea / listar_tareas_desarrollador) a la que se agrega el comentario", "requerido": true },
+      { "nombre": "MENSAJE", "tipo": "Texto", "descripcion": "Texto del comentario a agregar a la tarea", "requerido": true },
+      { "nombre": "COD_CATEGORIA_MENSAJE", "tipo": "Entero", "descripcion": "Categoría del mensaje, si el sistema de tareas la usa" },
+      { "nombre": "COD_DESARROLLADOR", "tipo": "Entero", "descripcion": "Desarrollador que agrega el comentario. Se resuelve automáticamente del usuario autenticado en el MCP (USUARIOS.COD_DESARROLLADOR) — no se puede indicar manualmente.", "requerido": true },
+      { "nombre": "FECHA_HORA_CREO", "tipo": "Texto", "descripcion": "Fecha/hora del comentario (ISO 8601). Si se omite, el sistema probablemente usa la fecha/hora actual" }
+    ]
+  },
+  {
+    "nombre": "listar_comentarios_tarea",
+    "metodo": "PROC_GET_MENSAJES_ASIGNACION",
+    "descripcion": "Lista los comentarios/mensajes agregados a una tarea (asignación) puntual.",
+    "parametros": [
+      { "nombre": "COD_ASIGNACION_JK3", "tipo": "Entero", "descripcion": "Código de la tarea (COD_ASIGNACION_JK3, ver crear_tarea / listar_tareas_desarrollador) cuyos comentarios se listan", "requerido": true }
+    ]
+  },
+  {
+    "nombre": "agenda_usuario",
+    "metodo": "PROC_GET_EVTOS_X_USUARIO",
+    "descripcion": "Lista los eventos en la agenda del usuario",
+	"CAMPO_USUARIO": "PCOD_USUARIO",
+    "parametros": [
+      { "nombre": "FECHA_DESDE", "tipo": "Texto", "descripcion": "Fecha desde para buscar eventos (ISO 8601, ej. '2026-09-20'", "requerido": true },
+	  { "nombre": "FECHA_HASTA", "tipo": "Texto", "descripcion": "Fecha hasta para buscar eventos (ISO 8601, ej. '2026-09-20'", "requerido": true }
+    ]
+  },
+  {
+    "nombre": "agendas_disponibles",
+    "metodo": "PROC_CHECK_DISPONIB_AGENDAS",
+    "descripcion": "Verifica si la agenda del usuario de la sesión está libre en un horario. Devuelve COD_AGENDA_EVENTO y DISPONIBLE (1 = libre, 0 = ocupada o sin agenda configurada). Usar SIEMPRE antes de agendar_ticket: el COD_AGENDA_EVENTO de la fila con DISPONIBLE=1 es el COD_AGENDA a usar. Si no vuelve ninguna fila con DISPONIBLE=1, informarle al usuario que no hay agenda disponible en el horario solicitado (y ofrecerle otro horario).",
+    "CAMPO_USUARIO": "P_AGENDAS",
+    "parametros": [
+      { "nombre": "FECHA_DESDE", "tipo": "Texto", "descripcion": "Inicio del evento (ISO 8601, ej. '2026-08-20 14:30').", "requerido": true },
+      { "nombre": "FECHA_HASTA", "tipo": "Texto", "descripcion": "Fin del evento = inicio + duración (ISO 8601, ej. '2026-08-20 15:30').", "requerido": true }
+    ]
+  },
+  {
+    "nombre": "agendar_ticket",
+    "metodo": "PROC_GRABAR_EVENTO",
+    "descripcion": "Registra un evento en la agenda asociado a un ticket (COD_RECLAMO). Antes de llamarla: (1) preguntarle al usuario la fecha/hora del evento y su DURACIÓN, y calcular FECHA_EVENTO (inicio) y FECHA_HASTA (inicio + duración); (2) preguntarle SIEMPRE si es un evento interno (P_INTERNO) y si se avisa por email a quien cargó el ticket (MANDA_MAIL) — por lo general interno lleva MANDA_MAIL=0 y no interno MANDA_MAIL=1, pero siempre confirmarlo con el usuario; (3) llamar agendas_disponibles con ese mismo horario: si vuelve una agenda con DISPONIBLE=1, usar su COD_AGENDA_EVENTO como COD_AGENDA; si vuelve más de una disponible, preguntarle al usuario cuál; si no vuelve ninguna disponible, NO agendar e informarle que no hay agenda disponible en ese horario. Un evento no interno deja además un hito en el historial del ticket. Devuelve RESULTADO (1 = ok), MENSAJE_ERROR y COD_EVENTO_RESULTADO.",
+    "CAMPO_USUARIO": "COD_USUARIO_CREADOR",
+    "parametros": [
+      { "nombre": "COD_RECLAMO", "tipo": "Entero", "descripcion": "Ticket al que se asocia el evento.", "requerido": true },
+      { "nombre": "COD_AGENDA", "tipo": "Entero", "descripcion": "Agenda donde se registra: COD_AGENDA_EVENTO de agendas_disponibles (fila con DISPONIBLE=1).", "requerido": true },
+      { "nombre": "EVENTO", "tipo": "Texto", "descripcion": "Título corto del evento (máx. 70 caracteres).", "requerido": true },
+      { "nombre": "DESCRIPCION", "tipo": "Texto", "descripcion": "Detalle del evento (máx. 3000 caracteres).", "requerido": true },
+      { "nombre": "FECHA", "tipo": "Texto", "descripcion": "Fecha/hora ACTUAL de registro (ISO 8601, ej. '2026-08-20 09:15'). No preguntarla: usar siempre la fecha y hora de ahora.", "requerido": true },
+      { "nombre": "FECHA_EVENTO", "tipo": "Texto", "descripcion": "Inicio del evento, según la fecha/hora que indique el usuario (ISO 8601, ej. '2026-08-20 14:30').", "requerido": true },
+      { "nombre": "FECHA_HASTA", "tipo": "Texto", "descripcion": "Fin del evento = FECHA_EVENTO + la duración que indique el usuario (ISO 8601).", "requerido": true },
+      { "nombre": "P_INTERNO", "tipo": "Entero", "descripcion": "1 = evento interno, 0 = no interno. OBLIGATORIO preguntárselo al usuario.", "requerido": true },
+      { "nombre": "MANDA_MAIL", "tipo": "Entero", "descripcion": "1 = avisar por email a quien cargó el ticket, 0 = no avisar. OBLIGATORIO preguntárselo al usuario (sugerencia: 0 si es interno, 1 si no lo es).", "requerido": true },
+      { "nombre": "TODO_DIA", "tipo": "Entero", "descripcion": "1 = evento de todo el día. Opcional.", "default": 0 },
+      { "nombre": "TIEMPO_AVISO", "tipo": "Entero", "descripcion": "Anticipación del recordatorio, en unidades de TIPO_AVISO.", "default": 10 },
+      { "nombre": "TIPO_AVISO", "tipo": "Texto", "descripcion": "Unidad del recordatorio.", "default": "Minuto" },
+      { "nombre": "REALIZADO", "tipo": "Entero", "descripcion": "1 = evento ya realizado.", "default": 0 }
+    ]
+  },
+  {
+    "nombre": "mover_tarea_tablero",
+    "metodo": "SET_ORDEN_KANBAN_ASIGNACION",
+    "descripcion": "Mueve una tarea (asignación) en el tablero kanban de tareas del desarrollador conectado: la cambia de estado (columna) y/o de posición dentro de la columna. Solo puede mover tareas propias — si la tarea no pertenece al desarrollador de la sesión no hace nada y devuelve RESULTADO=0 con MENSAJE 'La tarea no pertenece al desarrollador.'. Ojo: si la tarea tiene AVANCE >= 100 el sistema puede forzarla a FINALIZADA aunque se pida otro estado — el estado real en que quedó viene en ESTADO_ASIGNACION_EFECTIVO. Devuelve RESULTADO (1 = ok), MENSAJE y ESTADO_ASIGNACION_EFECTIVO.",
+    "campoDesarrollador": "P_COD_DESARROLLADOR",
+    "parametros": [
+      { "nombre": "P_COD_ASIGNACION_JK3", "tipo": "Entero", "descripcion": "Código de la tarea a mover (COD_ASIGNACION_JK3, ver listar_tareas_desarrollador / crear_tarea).", "requerido": true },
+      { "nombre": "P_NUEVO_ESTADO", "tipo": "Texto", "descripcion": "Estado (columna del kanban) destino. Valores posibles: 'POR INICIAR', 'INICIADA', 'REABIERTO', 'EN_CURSO', 'FINALIZA DESARROLLO', 'FINALIZADA'. Si es igual al estado actual, solo se reordena dentro de la misma columna.", "requerido": true },
+      { "nombre": "P_POSICION", "tipo": "Entero", "descripcion": "Posición dentro de la columna destino, empezando en 0 (0 = primera/arriba). Si es mayor que la cantidad de tarjetas, queda al final.", "default": 0 },
+      { "nombre": "P_COD_DESARROLLADOR", "tipo": "Entero", "descripcion": "Desarrollador dueño del tablero. Se resuelve automáticamente del usuario autenticado en el MCP (USUARIOS.COD_DESARROLLADOR) — no se puede indicar manualmente.", "requerido": true }
+    ]
+  }
+]

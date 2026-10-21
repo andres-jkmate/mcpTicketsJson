@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+medicion/resultados/
+*.log
+medicion/agente/corridas/
+
+# Config local con credenciales / rutas de la máquina
+.mcp.json
+.claude/settings.local.json

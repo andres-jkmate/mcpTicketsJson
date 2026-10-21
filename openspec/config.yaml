@@ -1,0 +1,74 @@
+schema: spec-driven
+
+context: |
+  Language: es
+  All artifacts must be written in es.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  ## Propósito
+  MCP de tickets de JKMate v2 (repo independiente `mcpTicketsJson`). Reemplaza progresivamente a
+  `tickets-jkmate-mcp`, que expone 23 tools "pasamano" de stored procedures de Firebird con
+  respuestas ruidosas (campos duplicados, datos de UI, escapado Unicode, textos largos en listados)
+  y sin tools compuestas, búsqueda por texto, agregaciones ni paginación con total.
+  La v2 ofrece pocas tools diseñadas a mano para agentes, que devuelven JSON tipado. La forma de los
+  datos se resuelve en la base con SP específicos para agentes. Primera etapa = experimento: debe
+  demostrar con mediciones (caracteres y cantidad de llamadas) la reducción de costo frente a la v1.
+  Decisión tomada: NO construir un intérprete genérico de contratos.
+
+  ## Estándar del equipo (obligatorio)
+  - TypeScript, transporte MCP stdio: el servidor corre local, lanzado por el cliente (decisión del
+    2026-10-17; reemplazó a Streamable HTTP + OAuth).
+  - Nombres de tools en español, snake_case, forma verbo_sustantivo
+    (obtener_contexto_ticket, listar_tickets).
+  - Logging estructurado con Pino hacia Seq. Tests con Vitest.
+  - Repo independiente: NO forma parte del monorepo Nx `jkmate-mcp` ni del registry de
+    `apps/mcp-gateway` (decisión del 2026-10-15).
+
+  ## Reglas de base de datos
+  - Firebird 3.x. La lógica de negocio vive en stored procedures.
+  - Naming, contrato RESULTADO/MENSAJE_ERROR, encabezado de comentarios, tipos de dato y
+    público/privado: seguir el hub JKMate-Knowledge `firebird/convenciones.md` (PROC_GET_,
+    PROC_LIST_, PRV_, ...). No duplicar esas reglas acá.
+  - No se ejecuta DDL sin confirmación explícita del usuario. Los SP nuevos se proponen en
+    el design.md del change; nunca se crean directamente. Una vez confirmados y aplicados, sus
+    scripts se versionan en `db/procedimientos/` (uno por archivo, numerados en orden de ejecución;
+    ver `db/README.md`) y el design los referencia en lugar de copiarlos.
+  - Para conocer tablas, SP y dependencias existentes usar las tools de `conocimiento-jkmate-mcp`
+    (db_buscar_exacto, db_buscar_texto, db_dependencias, db_dominio, db_similar). No copiar el
+    schema al repo. Ojo: ese catálogo es un agregado de instalaciones de clientes y NO refleja la
+    base de tickets de JKMate; los SP reales los confirma el usuario.
+  - Acceso a Firebird con `node-firebird` y charset de conexión UTF8 (decisión del 2026-10-16, sin
+    el código de la v1 disponible). Si aparece el mecanismo de `tickets-jkmate-mcp` y difiere, se
+    revisa en otro change.
+
+  ## Principios de diseño de tools
+  1. Pocas tools compuestas antes que muchas tools atómicas.
+  2. Toda tool declara `outputSchema` y responde con `structuredContent`. El `content` lleva dos
+     bloques de texto: un resumen y el mismo JSON serializado, porque hay clientes (Claude Desktop)
+     que solo le pasan `content` al modelo.
+  3. Solo los campos que un agente necesita. Sin duplicados, sin datos de UI.
+  4. Nombres de campos en camelCase, estables e independientes de los nombres de columna de los SP.
+  5. Tipos consistentes: un mismo dato tiene siempre el mismo tipo en todas las tools. Booleanos
+     reales, no 0/1. Fechas en ISO 8601 con offset.
+  6. JSON sin escapado Unicode.
+  7. Los listados no incluyen textos largos; el detalle va en otra tool o detrás de un parámetro
+     opcional.
+  8. Los listados paginan e informan el total.
+  9. La identidad del usuario que llama sale de la configuración del proceso (`MCP_COD_USUARIO`),
+     nunca de un parámetro. Filtrar por
+     OTRA persona (desarrollador, responsable) sí es un parámetro explícito válido.
+  10. Annotations MCP en todas las tools (readOnlyHint en lecturas, destructiveHint donde
+      corresponda).
+  11. Errores con forma uniforme y un código estable que el agente pueda interpretar.
+
+  ## Convenciones generales
+  Metodología SDD, plantillas y flujo de specs: hub JKMate-Knowledge `procesos/flujo-specs.md`.
+  Reglas de seguridad de agentes (confirmación antes de efectos reales, secretos): skill
+  `convenciones-jkmate:agent-safety-conventions`.
+
+rules:
+  design:
+    - Por cada tool documentar el SP que la alimenta (existente o nuevo con script propuesto), inputSchema, outputSchema y un ejemplo de respuesta.
+    - Marcar como "A CONFIRMAR" toda tabla/columna no verificada contra la base real de tickets.
+  specs:
+    - Escenarios en formato GIVEN/WHEN/THEN.

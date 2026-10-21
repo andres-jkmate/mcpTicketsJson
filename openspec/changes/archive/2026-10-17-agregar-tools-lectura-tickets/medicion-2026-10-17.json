@@ -1,0 +1,131 @@
+{
+  "fecha": "2026-10-17T23:57:13.795Z",
+  "filas": [
+    {
+      "tipo": "contexto",
+      "caso": "contexto #74836",
+      "llamadasV1": 5,
+      "llamadasV2": 1,
+      "caracteresV1": 5412,
+      "caracteresTextoV2": 6866,
+      "caracteresEstructuradoV2": 6708,
+      "reduccionTexto": -26.9,
+      "reduccionEstructurado": -23.9,
+      "erroresV1": 0,
+      "erroresV2": 0
+    },
+    {
+      "tipo": "contexto",
+      "caso": "contexto #74111",
+      "llamadasV1": 5,
+      "llamadasV2": 1,
+      "caracteresV1": 24446,
+      "caracteresTextoV2": 14025,
+      "caracteresEstructuradoV2": 13876,
+      "reduccionTexto": 42.6,
+      "reduccionEstructurado": 43.2,
+      "erroresV1": 0,
+      "erroresV2": 0
+    },
+    {
+      "tipo": "contexto",
+      "caso": "contexto #74703",
+      "llamadasV1": 5,
+      "llamadasV2": 1,
+      "caracteresV1": 4625,
+      "caracteresTextoV2": 17053,
+      "caracteresEstructuradoV2": 16874,
+      "reduccionTexto": -268.7,
+      "reduccionEstructurado": -264.8,
+      "erroresV1": 0,
+      "erroresV2": 0
+    },
+    {
+      "tipo": "contexto",
+      "caso": "contexto #74619",
+      "llamadasV1": 5,
+      "llamadasV2": 1,
+      "caracteresV1": 16809,
+      "caracteresTextoV2": 6680,
+      "caracteresEstructuradoV2": 6518,
+      "reduccionTexto": 60.3,
+      "reduccionEstructurado": 61.2,
+      "erroresV1": 0,
+      "erroresV2": 0
+    },
+    {
+      "tipo": "listado",
+      "caso": "mis tickets agendados",
+      "llamadasV1": 1,
+      "llamadasV2": 1,
+      "caracteresV1": 4685,
+      "caracteresTextoV2": 3571,
+      "caracteresEstructuradoV2": 3136,
+      "reduccionTexto": 23.8,
+      "reduccionEstructurado": 33.1,
+      "erroresV1": 0,
+      "erroresV2": 0
+    },
+    {
+      "tipo": "listado",
+      "caso": "mis tickets de prioridad CRITICA",
+      "llamadasV1": 1,
+      "llamadasV2": 1,
+      "caracteresV1": 565,
+      "caracteresTextoV2": 576,
+      "caracteresEstructuradoV2": 500,
+      "reduccionTexto": -1.9,
+      "reduccionEstructurado": 11.5,
+      "erroresV1": 0,
+      "erroresV2": 0
+    },
+    {
+      "tipo": "listado",
+      "caso": "mis tareas pendientes",
+      "llamadasV1": 1,
+      "llamadasV2": 1,
+      "caracteresV1": 99358,
+      "caracteresTextoV2": 9400,
+      "caracteresEstructuradoV2": 7561,
+      "reduccionTexto": 90.5,
+      "reduccionEstructurado": 92.4,
+      "erroresV1": 0,
+      "erroresV2": 0
+    }
+  ],
+  "totales": {
+    "llamadasV1": 23,
+    "llamadasV2": 7,
+    "caracteresV1": 155900,
+    "caracteresTextoV2": 58171,
+    "caracteresEstructuradoV2": 55173,
+    "reduccionTexto": 62.7,
+    "reduccionEstructurado": 64.6,
+    "erroresV1": 0,
+    "erroresV2": 0
+  },
+  "totalesPorTipo": {
+    "contexto": {
+      "llamadasV1": 20,
+      "llamadasV2": 4,
+      "caracteresV1": 51292,
+      "caracteresTextoV2": 44624,
+      "caracteresEstructuradoV2": 43976,
+      "reduccionTexto": 13,
+      "reduccionEstructurado": 14.3,
+      "erroresV1": 0,
+      "erroresV2": 0
+    },
+    "listado": {
+      "llamadasV1": 3,
+      "llamadasV2": 3,
+      "caracteresV1": 104608,
+      "caracteresTextoV2": 13547,
+      "caracteresEstructuradoV2": 11197,
+      "reduccionTexto": 87,
+      "reduccionEstructurado": 89.3,
+      "erroresV1": 0,
+      "erroresV2": 0
+    }
+  }
+}

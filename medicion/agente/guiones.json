@@ -1,0 +1,91 @@
+{
+  "descripcion": "Guiones del estimador sin API (design D12): por caso y versión, los turnos con las llamadas que haría un agente razonable. Las llamadas de un turno van en paralelo; después del último turno con llamadas viene el de la respuesta final. \"{hoy}\" se reemplaza por la fecha de la ejecución. Los textos de las escrituras son los mismos en las dos versiones.",
+  "guiones": {
+    "estado-ticket": {
+      "v1": [
+        [{ "tool": "detalle_ticket", "argumentos": { "P_COD_RECLAMO": 74836 } }],
+        [
+          { "tool": "historial_ticket", "argumentos": { "P_COD_RECLAMO": 74836 } },
+          { "tool": "agendas_ticket", "argumentos": { "P_COD_RECLAMO": 74836 } },
+          { "tool": "presupuestos_ticket", "argumentos": { "P_COD_RECLAMO": 74836 } },
+          { "tool": "listar_tareas_responsable", "argumentos": { "FECHA_DESDE": "2026-09-28 00:00", "FECHA_HASTA": "{hoy} 23:59" } }
+        ]
+      ],
+      "v2": [[{ "tool": "obtener_contexto_ticket", "argumentos": { "ticketId": 74836 } }]]
+    },
+    "mis-tickets-agendados": {
+      "v1": [[{ "tool": "listar_tickets", "argumentos": { "P_ESTADO": "AGENDADO", "P_CANTIDAD": 20 } }]],
+      "v2": [[{ "tool": "listar_tickets", "argumentos": { "asignadoA": "yo", "estados": ["AGENDADO"], "limite": 20 } }]]
+    },
+    "mis-tareas-pendientes": {
+      "v1": [
+        [
+          {
+            "tool": "listar_tareas_desarrollador",
+            "argumentos": { "FECHA_INICIO_D": "2020-01-01 00:00", "FECHA_INICIO_H": "2030-12-31 23:59", "IN_TERMINADAS": false }
+          }
+        ]
+      ],
+      "v2": [[{ "tool": "listar_tareas", "argumentos": { "limite": 20 } }]]
+    },
+    "crear-tarea": {
+      "v1": [
+        [{ "tool": "listar_desarrolladores", "argumentos": {} }],
+        [
+          {
+            "tool": "crear_tarea",
+            "argumentos": {
+              "NOMBRE": "Revisar el error reportado por el cliente en el ticket 74836",
+              "COD_DESARROLLADOR": 100934,
+              "NRO_TICKET": "74836",
+              "DESCRIPCION": "Revisar el error que reporta el cliente en el ticket 74836.\n\nCriterios de aceptación:\n- El error ya no se reproduce.\n- Queda documentada la causa."
+            }
+          }
+        ]
+      ],
+      "v2": [
+        [
+          {
+            "tool": "crear_tarea",
+            "argumentos": {
+              "tarea": { "nombre": "Revisar el error reportado por el cliente en el ticket 74836" },
+              "asignacion": { "desarrollador": { "nombre": "Gustavo Oviedo" } },
+              "ticketId": 74836,
+              "descripcion": {
+                "pedido": "Revisar el error que reporta el cliente en el ticket 74836.",
+                "criteriosAceptacion": ["El error ya no se reproduce.", "Queda documentada la causa."]
+              }
+            }
+          }
+        ]
+      ]
+    },
+    "prioridad-mensaje": {
+      "v1": [
+        [
+          {
+            "tool": "agregar_mensaje_ticket",
+            "argumentos": {
+              "P_COD_RECLAMO": 75056,
+              "P_NUEVA_PRIORIDAD": "ALTA",
+              "P_MENSAJE": "Hola, te avisamos que estamos priorizando tu ticket. Te mantenemos al tanto de los avances.",
+              "P_ES_INTERNO": false
+            }
+          }
+        ]
+      ],
+      "v2": [
+        [
+          {
+            "tool": "actualizar_ticket",
+            "argumentos": {
+              "ticketId": 75056,
+              "cambios": { "prioridad": "ALTA" },
+              "mensaje": { "texto": "Hola, te avisamos que estamos priorizando tu ticket. Te mantenemos al tanto de los avances.", "interno": false }
+            }
+          }
+        ]
+      ]
+    }
+  }
+}

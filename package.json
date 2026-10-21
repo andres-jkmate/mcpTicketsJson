@@ -1,0 +1,44 @@
+{
+  "name": "mcp-tickets-json",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP de tickets de JKMate v2: pocas tools de lectura diseñadas para agentes, con JSON tipado.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "prebuild": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx --env-file-if-exists=.env src/index.ts",
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:integracion": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run test/integracion test/stdio.test.ts src/db",
+    "medir": "npm run build && tsx --env-file-if-exists=.env scripts/medir-eficiencia.ts",
+    "medir:agente": "npm run build && tsx --env-file-if-exists=.env scripts/medir-agente.ts",
+    "estimar:agente": "npm run build && tsx --env-file-if-exists=.env scripts/estimar-agente.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "node-firebird": "^2.18.2",
+    "pino": "^10.4.0",
+    "pino-seq": "^4.0.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "eslint": "^10.13.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^4.1.12"
+  }
+}

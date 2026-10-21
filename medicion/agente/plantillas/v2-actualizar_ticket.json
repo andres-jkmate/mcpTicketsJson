@@ -1,0 +1,5 @@
+{
+  "descripcion": "Respuesta simulada de actualizar_ticket de la v2, según el contrato de la v2. \"{id}\" es el id ficticio del mensaje y \"{ticketId}\" sale de los argumentos.",
+  "resumen": "Ticket #{ticketId} actualizado.",
+  "structuredContent": { "id": "{ticketId}", "mensajeId": "{id}" }
+}

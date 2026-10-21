@@ -1,0 +1,8 @@
+{
+  "descripcion": "USD por millón de tokens (design D10). Escritura de caché = TTL de 5 minutos.",
+  "fuente": "https://platform.claude.com/docs/en/about-claude/pricing",
+  "verificadoEl": "2026-10-20",
+  "modelos": {
+    "claude-opus-5-5": { "entrada": 4, "salida": 20, "lecturaCache": 0.2, "escrituraCache": 5 }
+  }
+}

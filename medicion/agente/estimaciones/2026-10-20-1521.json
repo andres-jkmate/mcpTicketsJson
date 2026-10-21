@@ -1,0 +1,670 @@
+{
+  "tipo": "estimacion",
+  "fecha": "2026-10-20T18:21:49.242Z",
+  "modelo": "claude-opus-5-5",
+  "preciosUsdPorMTok": {
+    "entrada": 4,
+    "salida": 20,
+    "lecturaCache": 0.2,
+    "escrituraCache": 5
+  },
+  "supuestos": {
+    "descripcion": "Supuestos del estimador sin API (design D12). Son los mismos para las dos versiones. Si aparecen credenciales, la razón se calibra una vez con count_tokens.",
+    "razonCaracteresPorToken": 3.5,
+    "thinkingPorTurno": 300,
+    "respuestaFinal": 400,
+    "promptToolUse": 346
+  },
+  "tools": {
+    "v1": {
+      "cantidad": 24,
+      "caracteres": 22582,
+      "tokens": 6452,
+      "costoPrefijoPorTurnoUsd": {
+        "sesionCaliente": 0.0012904000000000001,
+        "sinCache": 0.025808
+      }
+    },
+    "v2": {
+      "cantidad": 6,
+      "caracteres": 14337,
+      "tokens": 4096.285714285715,
+      "costoPrefijoPorTurnoUsd": {
+        "sesionCaliente": 0.000819257142857143,
+        "sinCache": 0.01638514285714286
+      }
+    }
+  },
+  "casos": [
+    {
+      "caso": "estado-ticket",
+      "v1": {
+        "turnos": 3,
+        "llamadas": 5,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 21.428571428571427,
+            "lecturaCache": 20874,
+            "escrituraCache": 1621.1428571428569,
+            "salida": 1370.5714285714284,
+            "costoUsd": 0.039777657142857144
+          },
+          "sinCache": {
+            "entrada": 22516.571428571428,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1370.5714285714284,
+            "costoUsd": 0.11747771428571428
+          }
+        }
+      },
+      "v2": {
+        "turnos": 2,
+        "llamadas": 1,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 21.428571428571427,
+            "lecturaCache": 9101.428571428572,
+            "escrituraCache": 1973.7142857142853,
+            "salida": 1011.7142857142858,
+            "costoUsd": 0.032008857142857144
+          },
+          "sinCache": {
+            "entrada": 11096.571428571428,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1011.7142857142858,
+            "costoUsd": 0.06462057142857143
+          }
+        }
+      },
+      "diferencia": {
+        "sesionCaliente": -19.5,
+        "sinCache": -45
+      }
+    },
+    {
+      "caso": "mis-tickets-agendados",
+      "v1": {
+        "turnos": 2,
+        "llamadas": 1,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 8.285714285714286,
+            "lecturaCache": 13799.714285714286,
+            "escrituraCache": 1177.7142857142853,
+            "salida": 1015.1428571428571,
+            "costoUsd": 0.028984514285714285
+          },
+          "sinCache": {
+            "entrada": 14985.714285714286,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1015.1428571428571,
+            "costoUsd": 0.08024571428571428
+          }
+        }
+      },
+      "v2": {
+        "turnos": 2,
+        "llamadas": 1,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 8.285714285714286,
+            "lecturaCache": 9088.285714285714,
+            "escrituraCache": 1039.7142857142853,
+            "salida": 1019.1428571428571,
+            "costoUsd": 0.027432228571428567
+          },
+          "sinCache": {
+            "entrada": 10136.285714285714,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1019.1428571428571,
+            "costoUsd": 0.060928
+          }
+        }
+      },
+      "diferencia": {
+        "sesionCaliente": -5.4,
+        "sinCache": -24.1
+      }
+    },
+    {
+      "caso": "mis-tareas-pendientes",
+      "v1": {
+        "turnos": 2,
+        "llamadas": 1,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 8.285714285714286,
+            "lecturaCache": 13799.714285714286,
+            "escrituraCache": 27325.714285714283,
+            "salida": 1034.857142857143,
+            "costoUsd": 0.16011879999999998
+          },
+          "sinCache": {
+            "entrada": 41133.71428571428,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1034.857142857143,
+            "costoUsd": 0.18523199999999998
+          }
+        }
+      },
+      "v2": {
+        "turnos": 2,
+        "llamadas": 1,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 8.285714285714286,
+            "lecturaCache": 9088.285714285714,
+            "escrituraCache": 2665.142857142857,
+            "salida": 1007.4285714285714,
+            "costoUsd": 0.03532508571428571
+          },
+          "sinCache": {
+            "entrada": 11761.714285714286,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1007.4285714285714,
+            "costoUsd": 0.06719542857142857
+          }
+        }
+      },
+      "diferencia": {
+        "sesionCaliente": -77.9,
+        "sinCache": -63.7
+      }
+    },
+    {
+      "caso": "crear-tarea",
+      "v1": {
+        "turnos": 3,
+        "llamadas": 2,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 56,
+            "lecturaCache": 27391.142857142855,
+            "escrituraCache": 6690.000000000001,
+            "salida": 1392.2857142857142,
+            "costoUsd": 0.06699794285714286
+          },
+          "sinCache": {
+            "entrada": 34137.142857142855,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1392.2857142857142,
+            "costoUsd": 0.16439428571428572
+          }
+        }
+      },
+      "v2": {
+        "turnos": 2,
+        "llamadas": 1,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 56,
+            "lecturaCache": 9136,
+            "escrituraCache": 125.71428571428532,
+            "salida": 1097.7142857142858,
+            "costoUsd": 0.024634057142857144
+          },
+          "sinCache": {
+            "entrada": 9317.714285714286,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1097.7142857142858,
+            "costoUsd": 0.059225142857142865
+          }
+        }
+      },
+      "diferencia": {
+        "sesionCaliente": -63.2,
+        "sinCache": -64
+      }
+    },
+    {
+      "caso": "prioridad-mensaje",
+      "v1": {
+        "turnos": 2,
+        "llamadas": 1,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 31.714285714285715,
+            "lecturaCache": 13823.142857142855,
+            "escrituraCache": 84.28571428571468,
+            "salida": 1056.857142857143,
+            "costoUsd": 0.024450057142857144
+          },
+          "sinCache": {
+            "entrada": 13939.142857142855,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1056.857142857143,
+            "costoUsd": 0.07689371428571429
+          }
+        }
+      },
+      "v2": {
+        "turnos": 2,
+        "llamadas": 1,
+        "erroresTool": 0,
+        "escenarios": {
+          "sesionCaliente": {
+            "entrada": 31.714285714285715,
+            "lecturaCache": 9111.714285714286,
+            "escrituraCache": 72.57142857142935,
+            "salida": 1056,
+            "costoUsd": 0.02343205714285715
+          },
+          "sinCache": {
+            "entrada": 9216,
+            "lecturaCache": 0,
+            "escrituraCache": 0,
+            "salida": 1056,
+            "costoUsd": 0.057984
+          }
+        }
+      },
+      "diferencia": {
+        "sesionCaliente": -4.2,
+        "sinCache": -24.6
+      }
+    }
+  ],
+  "totales": {
+    "v1": {
+      "turnos": 12,
+      "llamadas": 10,
+      "erroresTool": 0,
+      "escenarios": {
+        "sesionCaliente": {
+          "entrada": 125.71428571428572,
+          "lecturaCache": 89687.71428571429,
+          "escrituraCache": 36898.857142857145,
+          "salida": 5869.714285714286,
+          "costoUsd": 0.32032897142857136
+        },
+        "sinCache": {
+          "entrada": 126712.28571428571,
+          "lecturaCache": 0,
+          "escrituraCache": 0,
+          "salida": 5869.714285714286,
+          "costoUsd": 0.6242434285714284
+        }
+      }
+    },
+    "v2": {
+      "turnos": 10,
+      "llamadas": 5,
+      "erroresTool": 0,
+      "escenarios": {
+        "sesionCaliente": {
+          "entrada": 125.71428571428572,
+          "lecturaCache": 45525.71428571429,
+          "escrituraCache": 5876.857142857142,
+          "salida": 5192,
+          "costoUsd": 0.14283228571428572
+        },
+        "sinCache": {
+          "entrada": 51528.28571428571,
+          "lecturaCache": 0,
+          "escrituraCache": 0,
+          "salida": 5192,
+          "costoUsd": 0.30995314285714287
+        }
+      }
+    },
+    "diferencia": {
+      "sesionCaliente": -55.4,
+      "sinCache": -50.3
+    }
+  },
+  "rango": [
+    {
+      "razon": 3,
+      "v1": {
+        "sesionCaliente": 0.3549120666666667,
+        "sinCache": 0.7068493333333333
+      },
+      "v2": {
+        "sesionCaliente": 0.1498556666666667,
+        "sinCache": 0.34263866666666665
+      },
+      "diferencia": {
+        "sesionCaliente": -57.8,
+        "sinCache": -51.5
+      }
+    },
+    {
+      "razon": 4,
+      "v1": {
+        "sesionCaliente": 0.29439165,
+        "sinCache": 0.562289
+      },
+      "v2": {
+        "sesionCaliente": 0.13756475,
+        "sinCache": 0.285439
+      },
+      "diferencia": {
+        "sesionCaliente": -53.3,
+        "sinCache": -49.2
+      }
+    }
+  ],
+  "mediciones": [
+    {
+      "caso": "estado-ticket",
+      "version": "v1",
+      "conversacion": {
+        "cantidadTools": 24,
+        "caracteresTools": 22582,
+        "caracteresSistema": 342,
+        "caracteresPedido": 75,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "detalle_ticket",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 37,
+                "caracteresResultado": 467
+              }
+            ]
+          },
+          {
+            "llamadas": [
+              {
+                "tool": "historial_ticket",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 39,
+                "caracteresResultado": 4483
+              },
+              {
+                "tool": "agendas_ticket",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 37,
+                "caracteresResultado": 445
+              },
+              {
+                "tool": "presupuestos_ticket",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 42,
+                "caracteresResultado": 16
+              },
+              {
+                "tool": "listar_tareas_responsable",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 92,
+                "caracteresResultado": 16
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "mis-tickets-agendados",
+      "version": "v1",
+      "conversacion": {
+        "cantidadTools": 24,
+        "caracteresTools": 22582,
+        "caracteresSistema": 342,
+        "caracteresPedido": 29,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "listar_tickets",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 53,
+                "caracteresResultado": 4069
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "mis-tareas-pendientes",
+      "version": "v1",
+      "conversacion": {
+        "cantidadTools": 24,
+        "caracteresTools": 22582,
+        "caracteresSistema": 342,
+        "caracteresPedido": 29,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "listar_tareas_desarrollador",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 122,
+                "caracteresResultado": 95518
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "crear-tarea",
+      "version": "v1",
+      "conversacion": {
+        "cantidadTools": 24,
+        "caracteresTools": 22582,
+        "caracteresSistema": 342,
+        "caracteresPedido": 196,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "listar_desarrolladores",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 24,
+                "caracteresResultado": 23048
+              }
+            ]
+          },
+          {
+            "llamadas": [
+              {
+                "tool": "crear_tarea",
+                "interceptada": true,
+                "error": false,
+                "caracteresArgumentos": 299,
+                "caracteresResultado": 44
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "prioridad-mensaje",
+      "version": "v1",
+      "conversacion": {
+        "cantidadTools": 24,
+        "caracteresTools": 22582,
+        "caracteresSistema": 342,
+        "caracteresPedido": 111,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "agregar_mensaje_ticket",
+                "interceptada": true,
+                "error": false,
+                "caracteresArgumentos": 199,
+                "caracteresResultado": 96
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "estado-ticket",
+      "version": "v2",
+      "conversacion": {
+        "cantidadTools": 6,
+        "caracteresTools": 14337,
+        "caracteresSistema": 342,
+        "caracteresPedido": 75,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "obtener_contexto_ticket",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 41,
+                "caracteresResultado": 6867
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "mis-tickets-agendados",
+      "version": "v2",
+      "conversacion": {
+        "cantidadTools": 6,
+        "caracteresTools": 14337,
+        "caracteresSistema": 342,
+        "caracteresPedido": 29,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "listar_tickets",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 67,
+                "caracteresResultado": 3572
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "mis-tareas-pendientes",
+      "version": "v2",
+      "conversacion": {
+        "cantidadTools": 6,
+        "caracteresTools": 14337,
+        "caracteresSistema": 342,
+        "caracteresPedido": 29,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "listar_tareas",
+                "interceptada": false,
+                "error": false,
+                "caracteresArgumentos": 26,
+                "caracteresResultado": 9302
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "crear-tarea",
+      "version": "v2",
+      "conversacion": {
+        "cantidadTools": 6,
+        "caracteresTools": 14337,
+        "caracteresSistema": 342,
+        "caracteresPedido": 196,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "crear_tarea",
+                "interceptada": true,
+                "error": false,
+                "caracteresArgumentos": 342,
+                "caracteresResultado": 98
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    },
+    {
+      "caso": "prioridad-mensaje",
+      "version": "v2",
+      "conversacion": {
+        "cantidadTools": 6,
+        "caracteresTools": 14337,
+        "caracteresSistema": 342,
+        "caracteresPedido": 111,
+        "turnos": [
+          {
+            "llamadas": [
+              {
+                "tool": "actualizar_ticket",
+                "interceptada": true,
+                "error": false,
+                "caracteresArgumentos": 196,
+                "caracteresResultado": 58
+              }
+            ]
+          },
+          {
+            "llamadas": []
+          }
+        ]
+      }
+    }
+  ]
+}

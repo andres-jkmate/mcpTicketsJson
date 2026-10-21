@@ -1,0 +1,42 @@
+{
+  "descripcion": "Casos del arnés de medición con agente (spec \"Conjunto fijo de casos\", design D8). Aprobados por el usuario el 2026-10-20.",
+  "repeticiones": 5,
+  "maxTurnos": 25,
+  "casos": [
+    {
+      "id": "estado-ticket",
+      "tipo": "lectura",
+      "ticketId": 74836,
+      "pedido": "¿Cómo está el ticket 74836? Decime en qué estado está y qué falta resolver.",
+      "criterio": "La respuesta menciona el estado del ticket y los ids de todas sus tareas no finalizadas."
+    },
+    {
+      "id": "mis-tickets-agendados",
+      "tipo": "lectura",
+      "pedido": "¿Qué tickets tengo agendados?",
+      "criterio": "La respuesta menciona todos los tickets en estado AGENDADO asignados al usuario, o el total correcto si son más de 25."
+    },
+    {
+      "id": "mis-tareas-pendientes",
+      "tipo": "lectura",
+      "pedido": "¿Qué tareas tengo pendientes?",
+      "criterio": "La respuesta menciona todas las tareas no finalizadas del usuario, o el total correcto si son más de 25."
+    },
+    {
+      "id": "crear-tarea",
+      "tipo": "escritura",
+      "ticketId": 74836,
+      "desarrollador": { "id": 100934, "nombre": "Gustavo Oviedo" },
+      "pedido": "Creale una tarea a Gustavo Oviedo sobre el ticket 74836 para que revise el error que reporta el cliente. Criterios de aceptación: que el error ya no se reproduzca y que quede documentada la causa.",
+      "criterio": "Una única escritura de creación de tarea sobre el ticket 74836, para Gustavo Oviedo (100934), con nombre no vacío y al menos un criterio de aceptación."
+    },
+    {
+      "id": "prioridad-mensaje",
+      "tipo": "escritura",
+      "ticketId": 75056,
+      "prioridad": "ALTA",
+      "pedido": "Subile la prioridad del ticket 75056 a ALTA y dejale un mensaje al cliente avisando que lo estamos priorizando.",
+      "criterio": "Una escritura sobre el ticket 75056 con prioridad ALTA y un mensaje no vacío."
+    }
+  ]
+}

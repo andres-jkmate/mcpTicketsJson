@@ -1,0 +1,4 @@
+{
+  "descripcion": "Respuesta real de crear_tarea de la v1 (2026-10-20, tarea 6359 creada para la plantilla). La v1 no devuelve el id de la tarea.",
+  "structuredContent": { "resultado": [{ "RESULTADO": 1, "MENSAJE": "" }] }
+}

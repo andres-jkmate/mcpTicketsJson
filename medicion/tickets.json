@@ -1,0 +1,27 @@
+{
+  "descripcion": "Conjunto fijo para comparar v1 contra v2 (design D9). El #74836 es obligatorio.",
+  "tickets": [74836, 74111, 74703, 74619],
+  "listados": [
+    {
+      "nombre": "mis tickets agendados",
+      "v1": { "tool": "listar_tickets", "argumentos": { "P_ESTADO": "AGENDADO", "P_CANTIDAD": 20 } },
+      "v2": { "tool": "listar_tickets", "argumentos": { "asignadoA": "yo", "estados": ["AGENDADO"], "limite": 20 } }
+    },
+    {
+      "nombre": "mis tickets de prioridad CRITICA",
+      "v1": { "tool": "listar_tickets", "argumentos": { "P_PRIORIDAD": "CRITICA", "P_CANTIDAD": 20 } },
+      "v2": {
+        "tool": "listar_tickets",
+        "argumentos": { "asignadoA": "yo", "prioridades": ["CRITICA"], "soloAbiertos": false, "limite": 20 }
+      }
+    },
+    {
+      "nombre": "mis tareas pendientes",
+      "v1": {
+        "tool": "listar_tareas_desarrollador",
+        "argumentos": { "FECHA_INICIO_D": "2020-01-01 00:00", "FECHA_INICIO_H": "2030-12-31 23:59", "IN_TERMINADAS": false }
+      },
+      "v2": { "tool": "listar_tareas", "argumentos": { "limite": 20 } }
+    }
+  ]
+}
