@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "firebird-escritura": {
+      "command": "node",
+      "args": [
+        "<ruta-a-mcpFirebird>\dist\cli.js",
+        "--host", "127.0.0.1",
+        "--port", "3050",
+        "--database", "<ruta-a-la-base>.fdb",
+        "--user", "SYSDBA",
+        "--charset", "ISO8859_1"
+      ],
+      "env": {
+        "FIREBIRD_PASSWORD": "",
+        "ALLOW_RAW_SQL": "true"
+      }
+    }
+  }
+}
