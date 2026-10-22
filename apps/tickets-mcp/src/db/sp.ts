@@ -1,32 +1,10 @@
-import { ErrorTool } from '../errores.js';
-import type { EjecutarSp, Fila, ValorParametro } from './firebird.js';
+import { aplicarContrato, type EjecutarSp, type ValorParametro } from '@mcp-jkmate/firebird';
 
 /*
  * Wrappers tipados de los 8 SP públicos `_AG` (design D8). Cada uno arma los parámetros en el
  * orden de la firma, aplica el contrato RESULTADO/MENSAJE_ERROR y devuelve filas tipadas sin
  * esas dos columnas. Fechas de parámetro: 'AAAA-MM-DD'. Fechas de resultado: "reloj" (Date).
  */
-
-const PREFIJO_NO_AUTORIZADO = 'NO_AUTORIZADO:';
-
-/**
- * Contrato de los selectables: 1 fila con RESULTADO = 0 es un error de validación; si no, cada
- * fila trae RESULTADO = 1. Cero filas = sin datos.
- */
-export function aplicarContrato<T>(nombreSp: string, filas: Fila[]): T[] {
-  const primera = filas[0];
-  if (primera && primera.RESULTADO === 0) {
-    const mensaje = String(primera.MENSAJE_ERROR ?? '').trim() || `Parámetros inválidos para ${nombreSp}`;
-    if (mensaje.startsWith(PREFIJO_NO_AUTORIZADO)) {
-      throw new ErrorTool('NO_AUTORIZADO', mensaje.slice(PREFIJO_NO_AUTORIZADO.length).trim());
-    }
-    throw new ErrorTool('PARAMETRO_INVALIDO', mensaje);
-  }
-  return filas.map((fila) => {
-    const { RESULTADO: _r, MENSAJE_ERROR: _m, ...resto } = fila;
-    return resto as T;
-  });
-}
 
 const bandera = (valor: boolean | undefined, porDefecto: boolean): number => ((valor ?? porDefecto) ? 1 : 0);
 const csv = (valores: readonly string[] | undefined): string | null => (valores?.length ? valores.join(',') : null);

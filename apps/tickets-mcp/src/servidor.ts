@@ -1,0 +1,12 @@
+import type { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import type { Logger } from 'pino';
+import { crearServidorMcp, type CualquierTool } from '@mcp-jkmate/core';
+import { CODIGOS_ERROR } from './errores.js';
+import type { SesionTickets } from './sesion.js';
+
+export const NOMBRE_SERVIDOR = 'mcp-tickets-json';
+export const VERSION_SERVIDOR = '0.1.0';
+
+export function crearServidorTickets(tools: CualquierTool<SesionTickets>[], deps: { logger: Logger; sesion: SesionTickets }): Server {
+  return crearServidorMcp(tools, { nombre: NOMBRE_SERVIDOR, version: VERSION_SERVIDOR, codigosError: CODIGOS_ERROR, ...deps });
+}

@@ -1,6 +1,5 @@
 import pino, { type DestinationStream, type Logger } from 'pino';
 import { createStream as crearStreamSeq } from 'pino-seq';
-import type { Config } from './config.js';
 
 /** Rutas que nunca deben llegar al log (credenciales en cualquier forma en que se logueen). */
 export const RUTAS_REDACTADAS = [
@@ -13,7 +12,13 @@ export const RUTAS_REDACTADAS = [
   '*.token',
 ];
 
-type ConfigLogger = Pick<Config, 'LOG_LEVEL' | 'SEQ_URL' | 'SEQ_API_KEY'>;
+export interface ConfigLogger {
+  /** Nombre de la app: va en el campo `app` de cada evento y como `Aplicacion` en Seq. */
+  app: string;
+  LOG_LEVEL: pino.LevelWithSilent;
+  SEQ_URL?: string | undefined;
+  SEQ_API_KEY?: string | undefined;
+}
 
 /**
  * Crea el logger de la aplicación: Pino a stderr y, si hay SEQ_URL, también a Seq. Nunca a stdout:
@@ -27,7 +32,7 @@ export function crearLogger(config: ConfigLogger, destino?: DestinationStream): 
       stream: crearStreamSeq({
         serverUrl: config.SEQ_URL,
         ...(config.SEQ_API_KEY ? { apiKey: config.SEQ_API_KEY } : {}),
-        additionalProperties: { Aplicacion: 'mcp-tickets-json' },
+        additionalProperties: { Aplicacion: config.app },
       }),
     });
   }
@@ -35,7 +40,7 @@ export function crearLogger(config: ConfigLogger, destino?: DestinationStream): 
   return pino(
     {
       level: config.LOG_LEVEL,
-      base: { app: 'mcp-tickets-json' },
+      base: { app: config.app },
       redact: { paths: RUTAS_REDACTADAS, censor: '[REDACTADO]' },
       timestamp: pino.stdTimeFunctions.isoTime,
     },

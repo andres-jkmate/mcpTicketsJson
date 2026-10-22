@@ -1,7 +1,7 @@
 /**
  * Fechas de Firebird. TIMESTAMP y DATE no tienen zona: guardan la hora de reloj de
  * ZONA_HORARIA_BASE. Acá se representan como "reloj": un Date cuyos campos UTC son esa hora
- * de reloj (la capa de datos lo arma así, ver db/firebird.ts). Solo al serializar se aplica
+ * de reloj (la capa de datos lo arma así, ver acceso.ts). Solo al serializar se aplica
  * la zona para obtener el offset.
  */
 

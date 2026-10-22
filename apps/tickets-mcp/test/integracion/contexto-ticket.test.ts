@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import type { AccesoDatos } from '../../src/db/firebird.js';
+import type { AccesoDatos } from '@mcp-jkmate/firebird';
 import { ESTADOS_TAREA, ESTADOS_TICKET, PRIORIDADES_TICKET, SISTEMAS } from '../../src/tools/esquemas.js';
 import { crearObtenerContextoTicket, type ContextoTicket } from '../../src/tools/obtener-contexto-ticket.js';
 import { conectarCliente } from '../apoyo.js';

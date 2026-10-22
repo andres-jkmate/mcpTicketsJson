@@ -13,9 +13,8 @@ import {
   type FilaTicket,
 } from '../db/sp.js';
 import { ErrorTool } from '../errores.js';
-import { aFecha, aFechaHoraIso, aFechaHoraIsoONull } from '../mapeo/fecha.js';
-import { aBooleano, aPersona, aRefNombre, aTextoONull, htmlATexto, omitirNulos, type Persona, type RefNombre } from '../mapeo/valores.js';
-import type { DefinicionTool } from './definicion.js';
+import { aBooleano, aFecha, aFechaHoraIso, aFechaHoraIsoONull, aPersona, aRefNombre, aTextoONull, htmlATexto, omitirNulos, type Persona, type RefNombre } from '@mcp-jkmate/firebird';
+import type { DefinicionTool } from '@mcp-jkmate/core';
 import { ANOTACIONES_LECTURA, conDefs, ref, refNullable, TIPOS_HITO } from './esquemas.js';
 import type { DependenciasTools } from './index.js';
 import { mapearTarea, plural, type Tarea } from './mapeo-comun.js';

@@ -1,6 +1,5 @@
 import type { FilaTarea } from '../db/sp.js';
-import { aFechaHoraIso, aFechaONull } from '../mapeo/fecha.js';
-import { aPersona, aRefNombre, type Persona, type RefNombre } from '../mapeo/valores.js';
+import { aFechaHoraIso, aFechaONull, aPersona, aRefNombre, type Persona, type RefNombre } from '@mcp-jkmate/firebird';
 
 export interface Tarea {
   id: number;

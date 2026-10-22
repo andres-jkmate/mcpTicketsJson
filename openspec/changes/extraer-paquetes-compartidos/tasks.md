@@ -20,21 +20,29 @@
 
 ## 4. Paquete `@mcp-jkmate/firebird`
 
-- [ ] 4.1 Crear `packages/firebird` (`package.json` con `exports` y la condición `@mcp-jkmate/source`, `tsconfig` con `composite`, `src/index.ts`) y mover con `git mv` `db/firebird.ts` → `acceso.ts` y `mapeo/` → `mapeo/`, con sus tests. Extraer `aplicarContrato` de `db/sp.ts` a `contrato.ts`, junto con sus tests. Declarar `node-firebird` como dependencia del paquete (design D3, Risks). Se verifica con los tests del paquete en verde (`npm test -w packages/firebird`).
-- [ ] 4.2 Agregar `consultar<T>(sql, parametros)` a `AccesoDatos` con el comentario de uso restringido de D6, sacar `codDesarrolladorDeUsuario` del paquete y agregar la opción `mensajeNoDisponible` (D7) con un default genérico. Se verifica con tests: `consultar` traduce un error de red a `BASE_NO_DISPONIBLE` y el mensaje configurado aparece en el error.
-- [ ] 4.3 En tickets, implementar `codDesarrolladorDeUsuario` sobre `consultar`, pasar el mensaje actual de `BASE_NO_DISPONIBLE` y cambiar los imports a `@mcp-jkmate/firebird`. Se verifica con `npm test` y `npm run typecheck` en verde.
+- [x] 4.1 Crear `packages/firebird` (`package.json` con `exports` y la condición `@mcp-jkmate/source`, `tsconfig` con `composite`, `src/index.ts`) y mover con `git mv` `db/firebird.ts` → `acceso.ts` y `mapeo/` → `mapeo/`, con sus tests. Extraer `aplicarContrato` de `db/sp.ts` a `contrato.ts`, junto con sus tests. Declarar `node-firebird` como dependencia del paquete (design D3, Risks). Se verifica con los tests del paquete en verde (`npm test -w packages/firebird`).
+  - Se hizo después de 5.1, porque `firebird` usa `ErrorTool` y `Medidor` de `core`. Los movimientos van en un commit propio. Los 4 tests de integración de `db/firebird.test.ts` pasaron a `apps/tickets-mcp/test/integracion/acceso.test.ts`, porque usan SP y tablas de tickets. `npm test -w packages/firebird`: 18 en verde.
+- [x] 4.2 Agregar `consultar<T>(sql, parametros)` a `AccesoDatos` con el comentario de uso restringido de D6, sacar `codDesarrolladorDeUsuario` del paquete y agregar la opción `mensajeNoDisponible` (D7) con un default genérico. Se verifica con tests: `consultar` traduce un error de red a `BASE_NO_DISPONIBLE` y el mensaje configurado aparece en el error.
+  - `MENSAJE_NO_DISPONIBLE` es el default genérico. Tests en `acceso.test.ts`.
+- [x] 4.3 En tickets, implementar `codDesarrolladorDeUsuario` sobre `consultar`, pasar el mensaje actual de `BASE_NO_DISPONIBLE` y cambiar los imports a `@mcp-jkmate/firebird`. Se verifica con `npm test` y `npm run typecheck` en verde.
+  - `src/db/usuarios.ts`. El texto de `BASE_NO_DISPONIBLE` de tickets se pasa desde `index.ts`. `test/apoyo.ts` simula `consultar`.
 
 ## 5. Paquete `@mcp-jkmate/core`
 
-- [ ] 5.1 Crear `packages/core` y mover con `git mv` `errores.ts`, `tools/definicion.ts`, `tools/ejecutar.ts`, `servidor-mcp.ts` → `servidor.ts`, `logger.ts` y `auth/sesion.ts`, con sus tests. Parametrizar el nombre y la versión del servidor, `app` del logger y la lista de códigos de error (D3, D4). Se verifica con los tests del paquete en verde.
-- [ ] 5.2 Implementar los códigos extensibles (D4): `CODIGOS_BASE`, `ErrorTool<C>`, genéricos en `DefinicionTool`/`ejecutarTool`/`crearServidorMcp`, el chequeo de tipo de que la lista incluye los códigos base y la conversión a `ERROR_INTERNO` de un código no declarado. Se verifica con un test del código no declarado y con un test de tipos (`expectTypeOf`/`@ts-expect-error`) que no compila al lanzar un código ajeno.
-- [ ] 5.3 Hacer `Sesion` genérica (D5) y definir `SesionTickets` en la app. Se verifica con `npm run typecheck`.
-- [ ] 5.4 Agregar `idCorrelacion` (D8): logger hijo por invocación en `ctx.logger`, con el que se emiten el error inesperado y el evento `invocacion_tool`. Actualizar `test/` de la app o el test del wrapper para cubrir los tres escenarios del delta de `contrato-tools`. Se verifica con esos tests.
-- [ ] 5.5 Pasar tickets a `@mcp-jkmate/core`: `src/errores.ts` propio con `CODIGOS_ERROR` en el orden original, `SesionTickets` e imports. Agregar el test que compara `tools/list` con `tools-list-antes.json` (D12). Se verifica con `npm test` en verde, con ese test incluido y la misma cantidad de tests de antes más los nuevos.
+- [x] 5.1 Crear `packages/core` y mover con `git mv` `errores.ts`, `tools/definicion.ts`, `tools/ejecutar.ts`, `servidor-mcp.ts` → `servidor.ts`, `logger.ts` y `auth/sesion.ts`, con sus tests. Parametrizar el nombre y la versión del servidor, `app` del logger y la lista de códigos de error (D3, D4). Se verifica con los tests del paquete en verde.
+  - Además, `src/pruebas.ts` (subpath `@mcp-jkmate/core/pruebas`) con `conectarCliente` y `loggerEnMemoria`, que usa `test/apoyo.ts` de tickets. En tickets, el nombre, la versión y la lista quedan en `src/servidor.ts` (`crearServidorTickets`). `npm test -w packages/core`: 31 en verde, con los tests de tipos.
+- [x] 5.2 Implementar los códigos extensibles (D4): `CODIGOS_BASE`, `ErrorTool<C>`, genéricos en `DefinicionTool`/`ejecutarTool`/`crearServidorMcp`, el chequeo de tipo de que la lista incluye los códigos base y la conversión a `ERROR_INTERNO` de un código no declarado. Se verifica con un test del código no declarado y con un test de tipos (`expectTypeOf`/`@ts-expect-error`) que no compila al lanzar un código ajeno.
+  - El control en compilación está en el constructor de `ErrorTool<C>` (`NoInfer`); `DefinicionTool` no lleva los códigos (ver design D4). Tests: `ejecutar.test.ts` (código no declarado) y `tipos.test-d.ts` (`@ts-expect-error` y `expectTypeOf`, corre con `vitest` y con `tsc --noEmit`).
+- [x] 5.3 Hacer `Sesion` genérica (D5) y definir `SesionTickets` en la app. Se verifica con `npm run typecheck`.
+- [x] 5.4 Agregar `idCorrelacion` (D8): logger hijo por invocación en `ctx.logger`, con el que se emiten el error inesperado y el evento `invocacion_tool`. Actualizar `test/` de la app o el test del wrapper para cubrir los tres escenarios del delta de `contrato-tools`. Se verifica con esos tests.
+  - Tests en `packages/core/src/ejecutar.test.ts` (bloque `idCorrelacion`). Bug que ya existía y no se arregla en este change: `pino.multistream` sin `level` por stream filtra todo lo que está por debajo de `info`, así que `LOG_LEVEL=debug` no saca logs de debug.
+- [x] 5.5 Pasar tickets a `@mcp-jkmate/core`: `src/errores.ts` propio con `CODIGOS_ERROR` en el orden original, `SesionTickets` e imports. Agregar el test que compara `tools/list` con `tools-list-antes.json` (D12). Se verifica con `npm test` en verde, con ese test incluido y la misma cantidad de tests de antes más los nuevos.
+  - El snapshot se lee de `apps/tickets-mcp/test/datos/tools-list.json`, copia idéntica de `tools-list-antes.json` (design D12). `npm test`: 249 en verde (233 de antes + 15 de core + 1 de firebird) y 16 saltados, como en 1.1. Con base: `test:integracion` en verde (17) y la medición de la v2 idéntica a `medicion-v2-antes.json`, incluido el hash de cada respuesta.
 
 ## 6. Plantilla de descripción de tools
 
-- [ ] 6.1 Implementar `verificarDescripcion` en core (D9) y un helper de test que recorre las tools de un servidor. Se verifica con tests: descripción completa, parte faltante, partes desordenadas, falta de ejemplo y `Parámetros: ninguno.`
+- [x] 6.1 Implementar `verificarDescripcion` en core (D9) y un helper de test que recorre las tools de un servidor. Se verifica con tests: descripción completa, parte faltante, partes desordenadas, falta de ejemplo y `Parámetros: ninguno.`
+  - `verificarDescripcion` en `core/src/descripcion.ts`; el helper es `problemasDeDescripcion` en `@mcp-jkmate/core/pruebas`.
 
 ## 7. Plantilla de MCP
 

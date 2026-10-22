@@ -8,7 +8,7 @@ import {
   TICKET_74836,
   type OpcionesTicket,
 } from '../../test/datos/ticket-74836.js';
-import type { Fila } from '../db/firebird.js';
+import type { Fila } from '@mcp-jkmate/firebird';
 import { crearObtenerContextoTicket, type ContextoTicket } from './obtener-contexto-ticket.js';
 
 const ZONA = 'America/Argentina/Buenos_Aires';

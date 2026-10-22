@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import { listarTickets, type FilaListadoTicket, type OrdenTickets } from '../db/sp.js';
-import { aFechaHoraIso } from '../mapeo/fecha.js';
-import { aPersona, aRefNombre, aTextoONull, type Persona, type RefNombre } from '../mapeo/valores.js';
-import type { DefinicionTool } from './definicion.js';
+import { aFechaHoraIso, aPersona, aRefNombre, aTextoONull, type Persona, type RefNombre } from '@mcp-jkmate/firebird';
+import type { DefinicionTool } from '@mcp-jkmate/core';
 import {
   ANOTACIONES_LECTURA,
   conDefs,
@@ -14,6 +13,7 @@ import {
   refNullable,
 } from './esquemas.js';
 import { aFiltrosSp, FILTROS_TICKETS_JSON, filtrosTicketsZod, MENSAJE_RANGO, rangoValido, sufijoAbiertos } from './filtros-tickets.js';
+import type { SesionTickets } from '../sesion.js';
 import type { DependenciasTools } from './index.js';
 import { plural, rango } from './mapeo-comun.js';
 
@@ -77,7 +77,7 @@ export function resumirListado(l: ListadoTickets, abiertos: string): string {
   return `${cabecera}. ${items}.`;
 }
 
-export function crearListarTickets({ acceso, zonaHoraria }: DependenciasTools): DefinicionTool<Entrada, ListadoTickets> {
+export function crearListarTickets({ acceso, zonaHoraria }: DependenciasTools): DefinicionTool<Entrada, ListadoTickets, SesionTickets> {
   return {
     nombre: 'listar_tickets',
     titulo: 'Listar tickets',

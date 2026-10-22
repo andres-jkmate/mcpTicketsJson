@@ -1,4 +1,4 @@
-import { crearAccesoFirebird, type AccesoDatos } from '../../src/db/firebird.js';
+import { crearAccesoFirebird, type AccesoDatos } from '@mcp-jkmate/firebird';
 
 /**
  * Integración contra la base de desarrollo: solo corre si hay FIREBIRD_* en el entorno.

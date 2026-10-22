@@ -1,0 +1,25 @@
+{
+  "name": "@mcp-jkmate/firebird",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Acceso a Firebird para los MCPs: pool de node-firebird, transacción de solo lectura, contrato RESULTADO/MENSAJE_ERROR y conversión de valores.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@mcp-jkmate/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "tsc -b tsconfig.build.json",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mcp-jkmate/core": "*",
+    "node-firebird": "^2.18.2"
+  }
+}

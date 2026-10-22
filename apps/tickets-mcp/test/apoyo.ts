@@ -1,40 +1,15 @@
-import type { AccesoDatos, Fila, ValorParametro } from '../src/db/firebird.js';
-import { relojDesdeTexto } from '../src/mapeo/fecha.js';
-import { Writable } from 'node:stream';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import type { Sesion } from '../src/auth/sesion.js';
-import { crearLogger } from '../src/logger.js';
-import { crearServidorMcp } from '../src/servidor-mcp.js';
-import type { DefinicionTool } from '../src/tools/definicion.js';
+import type { CualquierTool } from '@mcp-jkmate/core';
+import { conectarCliente as conectarClienteCore } from '@mcp-jkmate/core/pruebas';
+import { type AccesoDatos, type Fila, relojDesdeTexto, type ValorParametro } from '@mcp-jkmate/firebird';
+import { CODIGOS_ERROR } from '../src/errores.js';
+import { NOMBRE_SERVIDOR, VERSION_SERVIDOR } from '../src/servidor.js';
+import type { SesionTickets } from '../src/sesion.js';
 
-export const SESION_PRUEBA: Sesion = { codUsuario: 15169, codDesarrollador: 100936 };
+export const SESION_PRUEBA: SesionTickets = { codUsuario: 15169, codDesarrollador: 100936 };
 
-/** Logger que acumula los eventos en memoria, ya parseados. */
-export function loggerEnMemoria() {
-  const eventos: Record<string, unknown>[] = [];
-  const crudo: string[] = [];
-  const stream = new Writable({
-    write(chunk, _enc, cb) {
-      const linea = chunk.toString();
-      crudo.push(linea);
-      eventos.push(JSON.parse(linea) as Record<string, unknown>);
-      cb();
-    },
-  });
-  const logger = crearLogger({ LOG_LEVEL: 'debug', SEQ_URL: undefined, SEQ_API_KEY: undefined }, stream);
-  return { logger, eventos, crudo };
-}
-
-/** Conecta un cliente real del SDK a un servidor con las tools dadas, sin HTTP. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function conectarCliente(tools: DefinicionTool<any, any>[], sesion: Sesion = SESION_PRUEBA) {
-  const { logger, eventos, crudo } = loggerEnMemoria();
-  const servidor = crearServidorMcp(tools, { logger, sesion });
-  const cliente = new Client({ name: 'test', version: '0.0.0' });
-  const [lado1, lado2] = InMemoryTransport.createLinkedPair();
-  await Promise.all([servidor.connect(lado1), cliente.connect(lado2)]);
-  return { cliente, servidor, eventos, crudo };
+/** Conecta un cliente real del SDK a un servidor de tickets con las tools dadas, sin HTTP. */
+export async function conectarCliente(tools: CualquierTool<SesionTickets>[], sesion: SesionTickets = SESION_PRUEBA) {
+  return conectarClienteCore(tools, { sesion, codigosError: CODIGOS_ERROR, nombre: NOMBRE_SERVIDOR, version: VERSION_SERVIDOR });
 }
 
 // ---------------------------------------------------------------- base simulada
@@ -61,8 +36,9 @@ export function accesoSimulado(manejadores: Record<string, ManejadorSp>, codDesa
         return manejador(parametros).map((f) => ('RESULTADO' in f ? f : { RESULTADO: 1, MENSAJE_ERROR: '', ...f }));
       });
     },
-    async codDesarrolladorDeUsuario() {
-      return codDesarrollador;
+    async consultar<T>(): Promise<T[]> {
+      // La única consulta fija de tickets es la del desarrollador del usuario (db/usuarios.ts).
+      return [{ COD_DESARROLLADOR: codDesarrollador }] as T[];
     },
     async cerrar() {},
   };

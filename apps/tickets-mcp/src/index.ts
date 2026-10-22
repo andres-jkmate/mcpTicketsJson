@@ -1,10 +1,13 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import type { Sesion } from './auth/sesion.js';
+import { crearLogger } from '@mcp-jkmate/core';
+import { crearAccesoFirebird } from '@mcp-jkmate/firebird';
 import { cargarConfig } from './config.js';
-import { crearAccesoFirebird } from './db/firebird.js';
-import { crearLogger } from './logger.js';
-import { crearServidorMcp } from './servidor-mcp.js';
+import { codDesarrolladorDeUsuario } from './db/usuarios.js';
+import { crearServidorTickets, NOMBRE_SERVIDOR } from './servidor.js';
+import type { SesionTickets } from './sesion.js';
 import { crearTools } from './tools/index.js';
+
+const MENSAJE_NO_DISPONIBLE = 'La base de datos de tickets no está disponible en este momento. Reintentá en unos minutos.';
 
 /*
  * Servidor MCP local por stdio (Claude Desktop lo lanza como proceso hijo). stdout es el canal
@@ -12,19 +15,19 @@ import { crearTools } from './tools/index.js';
  */
 async function principal() {
   const config = cargarConfig();
-  const logger = crearLogger(config);
-  const acceso = crearAccesoFirebird(config);
+  const logger = crearLogger({ ...config, app: NOMBRE_SERVIDOR });
+  const acceso = crearAccesoFirebird(config, { mensajeNoDisponible: MENSAJE_NO_DISPONIBLE });
 
   // Un proceso = un usuario. El desarrollador se resuelve una vez, al arrancar.
-  const sesion: Sesion = {
+  const sesion: SesionTickets = {
     codUsuario: config.MCP_COD_USUARIO,
-    codDesarrollador: await acceso.codDesarrolladorDeUsuario(config.MCP_COD_USUARIO).catch((error: unknown) => {
+    codDesarrollador: await codDesarrolladorDeUsuario(acceso, config.MCP_COD_USUARIO).catch((error: unknown) => {
       logger.warn({ err: error }, 'No se pudo resolver el desarrollador del usuario; "yo" en tareas no estará disponible');
       return null;
     }),
   };
 
-  const servidor = crearServidorMcp(crearTools({ acceso, zonaHoraria: config.ZONA_HORARIA_BASE }), { logger, sesion });
+  const servidor = crearServidorTickets(crearTools({ acceso, zonaHoraria: config.ZONA_HORARIA_BASE }), { logger, sesion });
 
   async function apagar() {
     await servidor.close().catch(() => undefined);

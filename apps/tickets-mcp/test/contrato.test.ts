@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { crearTools } from '../src/tools/index.js';
 import { accesoSimulado, conectarCliente } from './apoyo.js';
@@ -55,5 +57,11 @@ describe('contrato común de las tools', () => {
 
   it('las descripciones orientan al agente', async () => {
     for (const t of await listarTools()) expect(t.description?.length).toBeGreaterThan(80);
+  });
+
+  it('tools/list es idéntico al snapshot del contrato publicado', async () => {
+    // Cambiar el contrato tiene que ser explícito: el change que lo cambie actualiza el snapshot.
+    const snapshot = await readFile(resolve(import.meta.dirname, 'datos/tools-list.json'), 'utf8');
+    expect(`${JSON.stringify(await listarTools(), null, 2)}\n`).toBe(snapshot.replace(/\r\n/g, '\n'));
   });
 });

@@ -1,0 +1,34 @@
+{
+  "name": "@mcp-jkmate/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Base común de los MCPs: contrato de tools, wrapper de invocación, errores uniformes, servidor y logger.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@mcp-jkmate/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./pruebas": {
+      "@mcp-jkmate/source": "./src/pruebas.ts",
+      "types": "./dist/pruebas.d.ts",
+      "default": "./dist/pruebas.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "tsc -b tsconfig.build.json",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pino-seq": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7"
+  }
+}

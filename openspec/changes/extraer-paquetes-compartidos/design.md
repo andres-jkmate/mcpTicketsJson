@@ -46,8 +46,8 @@ Los paquetes se llaman `@mcp-jkmate/core` y `@mcp-jkmate/firebird`. Su `package.
 
 | Destino | Contenido (origen) |
 |---|---|
-| `packages/core/src/` | `errores.ts`, `definicion.ts` (`DefinicionTool`, `ContextoTool`, `RespuestaTool`, `Medidor`, `conError`), `ejecutar.ts`, `servidor.ts` (de `servidor-mcp.ts`), `logger.ts`, `sesion.ts`, `descripcion.ts` (nuevo, D9) |
-| `packages/firebird/src/` | `acceso.ts` (de `db/firebird.ts`, sin `codDesarrolladorDeUsuario`), `contrato.ts` (`aplicarContrato` de `db/sp.ts`), `mapeo/fecha.ts`, `mapeo/valores.ts` |
+| `packages/core/src/` | `errores.ts`, `definicion.ts` (`DefinicionTool`, `ContextoTool`, `RespuestaTool`, `Medidor`, `conError`), `ejecutar.ts`, `servidor.ts` (de `servidor-mcp.ts`), `logger.ts`, `sesion.ts`, `descripcion.ts` (nuevo, D9) y `pruebas.ts` (subpath `@mcp-jkmate/core/pruebas`: cliente en memoria, logger en memoria y recorrido de descripciones para los tests de cada app) |
+| `packages/firebird/src/` | `acceso.ts` (de `db/firebird.ts`, sin `codDesarrolladorDeUsuario`), `contrato.ts` (`aplicarContrato` de `db/sp.ts`), `mapeo/fecha.ts`, `mapeo/valores.ts`. Los tests de integración de `db/firebird.test.ts` usan SP y tablas de tickets, así que pasan a `apps/tickets-mcp/test/integracion/acceso.test.ts` |
 | `apps/tickets-mcp/` | el resto de `src/` (tools, `db/sp.ts` sin `aplicarContrato`, `config.ts`, `index.ts`, `errores.ts` propio, D4), `db/`, `scripts/`, `medicion/`, `test/`, `docs/`, el README de tickets y `.env.example` |
 | `apps/_template-mcp/` | nuevo (D10) |
 | raíz | `package.json` (workspaces), `tsconfig.base.json`, `eslint.config.js`, `vitest.config.ts` (projects), `openspec/`, `.claude/`, `README.md` del monorepo |
@@ -61,7 +61,7 @@ Los paquetes se llaman `@mcp-jkmate/core` y `@mcp-jkmate/firebird`. Su `package.
 export const CODIGOS_ERROR = ['PARAMETRO_INVALIDO', 'TICKET_NO_ENCONTRADO', 'NO_AUTORIZADO', 'BASE_NO_DISPONIBLE', 'ERROR_INTERNO'] as const;
 ```
 Tickets conserva el orden original, así que el enum del `outputSchema` queda igual byte a byte.
-- **Control en compilación:** `DefinicionTool`, `ejecutarTool` y `crearServidorMcp` son genéricos en el código, y una app que lanza un código que no está en su lista no compila. Además, la lista declarada tiene que incluir los códigos base (se verifica con un tipo).
+- **Control en compilación:** `ErrorTool<C>` no infiere el código del argumento (`NoInfer`): sin parámetro de tipo solo acepta los códigos base. Cada app declara `class ErrorTool extends ErrorToolBase<CodigoError> {}` en su `errores.ts` y sus tools la importan de ahí, así que un código que no está en su lista no compila. `ejecutarTool` y `crearServidorMcp` son genéricos en la lista de códigos, y el tipo `CodigosError<L>` hace que no compile una lista sin los códigos base. `DefinicionTool` es genérico en la sesión (D5) pero no en los códigos: un `throw` no tiene tipo en TypeScript, así que el control tiene que estar en el constructor del error.
 - **Control en ejecución:** si a `ejecutarTool` le llega un `ErrorTool` con un código que el servidor no declaró, lo convierte en `ERROR_INTERNO` y lo loguea. Así se cumple el contrato aunque se haya saltado el tipo.
 
 **Alternativa descartada:** un enum global con todos los códigos de todos los MCPs. Acopla todos los servidores y publica códigos que una tool nunca devuelve.
@@ -104,7 +104,7 @@ Está dentro de `workspaces`, así que compila y se testea con el resto y no se 
 
 ### D12. Cómo se demuestra que tickets no cambió
 1. **Antes de mover nada:** un script guarda el JSON de `tools/list` (servidor en memoria, sin base) en `openspec/changes/extraer-paquetes-compartidos/tools-list-antes.json` y se anota la cantidad de tests que pasan.
-2. **Después:** un test de la app compara el `tools/list` actual con ese archivo, byte a byte con `JSON.stringify`. Al archivar el change, el archivo pasa a `apps/tickets-mcp/test/datos/` como snapshot del contrato.
+2. **Después:** un test de la app compara el `tools/list` actual con ese archivo, byte a byte con `JSON.stringify`. El test lee una copia idéntica en `apps/tickets-mcp/test/datos/tools-list.json` (mismo hash de git), para no depender de la carpeta del change, que se mueve al archivar. Al archivar, la copia del change puede borrarse.
 3. **Con la base de prueba disponible:** `npm run medir -w apps/tickets-mcp` da las mismas cifras de la v2 que la corrida previa.
 
 ## Risks / Trade-offs

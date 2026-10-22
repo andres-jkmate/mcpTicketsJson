@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import type { Sesion } from '../auth/sesion.js';
+import type { SesionTickets } from '../sesion.js';
 import type { FiltrosTickets } from '../db/sp.js';
-import type { EsquemaJson } from './definicion.js';
+import type { EsquemaJson } from '@mcp-jkmate/core';
 import { ESTADOS_TICKET, fechaZod, personaOYoJson, personaOYoZod, PRIORIDADES_TICKET, ref, SISTEMAS } from './esquemas.js';
 
 /** Filtros compartidos por listar_tickets y resumir_tickets (design D5 y D7). */
@@ -68,7 +68,7 @@ export function rangoValido(f: { creadoDesde?: string; creadoHasta?: string }): 
 export const MENSAJE_RANGO = 'creadoDesde es posterior a creadoHasta';
 
 /** Traduce los filtros de la tool a los parámetros de los SP, resolviendo "yo" desde la sesión. */
-export function aFiltrosSp(f: ValoresFiltros, sesion: Sesion): FiltrosTickets {
+export function aFiltrosSp(f: ValoresFiltros, sesion: SesionTickets): FiltrosTickets {
   const persona = (valor: number | 'yo' | undefined) => (valor === 'yo' ? sesion.codUsuario : valor);
   return {
     ...(f.estados ? { estados: f.estados } : {}),

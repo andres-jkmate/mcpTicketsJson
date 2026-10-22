@@ -1,34 +1,42 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
-export const CODIGOS_ERROR = [
-  'PARAMETRO_INVALIDO',
-  'TICKET_NO_ENCONTRADO',
-  'NO_AUTORIZADO',
-  'BASE_NO_DISPONIBLE',
-  'ERROR_INTERNO',
-] as const;
+/** Códigos que comparten todos los MCPs, con el mismo significado en todos. */
+export const CODIGOS_BASE = ['PARAMETRO_INVALIDO', 'NO_AUTORIZADO', 'BASE_NO_DISPONIBLE', 'ERROR_INTERNO'] as const;
 
-export type CodigoError = (typeof CODIGOS_ERROR)[number];
+export type CodigoBase = (typeof CODIGOS_BASE)[number];
 
-export interface ErrorSerializado {
-  codigo: CodigoError;
+/**
+ * Lista de códigos de un servidor. Si le falta alguno de los códigos base, el tipo deja de ser la
+ * lista y pasa a ser un objeto que nombra los que faltan, así que no compila.
+ */
+export type CodigosError<L extends readonly string[]> = [Exclude<CodigoBase, L[number]>] extends [never]
+  ? L
+  : { faltanCodigosBase: Exclude<CodigoBase, L[number]> };
+
+export interface ErrorSerializado<C extends string = string> {
+  codigo: C;
   mensaje: string;
   detalle?: unknown;
 }
 
-/** Error de negocio o de validación que la tool devuelve al agente con un código estable. */
-export class ErrorTool extends Error {
-  readonly codigo: CodigoError;
+/**
+ * Error de negocio o de validación que la tool devuelve al agente con un código estable.
+ * El código no se infiere del argumento: sin parámetro de tipo solo acepta los códigos base. Cada
+ * app declara su propia clase con sus códigos (`class ErrorTool extends ErrorToolBase<CodigoError>`),
+ * así un código que su servidor no declaró no compila.
+ */
+export class ErrorTool<C extends string = CodigoBase> extends Error {
+  readonly codigo: C;
   readonly detalle?: unknown;
 
-  constructor(codigo: CodigoError, mensaje: string, detalle?: unknown) {
+  constructor(codigo: NoInfer<C>, mensaje: string, detalle?: unknown) {
     super(mensaje);
     this.name = 'ErrorTool';
     this.codigo = codigo;
     if (detalle !== undefined) this.detalle = detalle;
   }
 
-  serializar(): ErrorSerializado {
+  serializar(): ErrorSerializado<C> {
     return {
       codigo: this.codigo,
       mensaje: this.message,
@@ -43,12 +51,12 @@ const MENSAJE_INTERNO = 'Ocurrió un error inesperado. El detalle quedó registr
  * Normaliza cualquier error a la forma que ve el agente. Lo que no es `ErrorTool` sale como
  * `ERROR_INTERNO` sin detalle: nunca trazas, SQL ni credenciales.
  */
-export function normalizarError(error: unknown): ErrorTool {
+export function normalizarError(error: unknown): ErrorTool<string> {
   if (error instanceof ErrorTool) return error;
   return new ErrorTool('ERROR_INTERNO', MENSAJE_INTERNO);
 }
 
-export function resultadoError(error: ErrorTool): CallToolResult {
+export function resultadoError(error: ErrorTool<string>): CallToolResult {
   const serializado = error.serializar();
   return {
     isError: true,
@@ -57,13 +65,15 @@ export function resultadoError(error: ErrorTool): CallToolResult {
   };
 }
 
-/** JSON Schema del objeto `error`, que se agrega a todo outputSchema (ver `conError`). */
-export const ESQUEMA_ERROR = {
-  type: 'object',
-  properties: {
-    codigo: { enum: [...CODIGOS_ERROR] },
-    mensaje: { type: 'string' },
-    detalle: {},
-  },
-  required: ['codigo', 'mensaje'],
-} as const;
+/** JSON Schema del objeto `error` con los códigos del servidor, que se agrega a todo outputSchema (ver `conError`). */
+export function esquemaError(codigos: readonly string[]) {
+  return {
+    type: 'object',
+    properties: {
+      codigo: { enum: [...codigos] },
+      mensaje: { type: 'string' },
+      detalle: {},
+    },
+    required: ['codigo', 'mensaje'],
+  } as const;
+}

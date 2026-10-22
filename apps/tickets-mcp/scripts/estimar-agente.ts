@@ -15,6 +15,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { cargarConfig } from '../src/config.js';
+import { codDesarrolladorDeUsuario } from '../src/db/usuarios.js';
 import { abrirBase } from './agente/base.js';
 import { cargarCasos, CASOS_OBLIGATORIOS, type IdCaso } from './agente/casos.js';
 import { conectarV1, conectarV2, type Conexion } from './agente/conexion.js';
@@ -80,7 +81,7 @@ async function principal() {
   const conexiones = new Map<Version, Conexion>();
   const base = abrirBase(config);
   try {
-    const codDesarrollador = await base.acceso.codDesarrolladorDeUsuario(config.MCP_COD_USUARIO);
+    const codDesarrollador = await codDesarrolladorDeUsuario(base.acceso, config.MCP_COD_USUARIO);
     if (codDesarrollador === null) throw new Error(`El usuario ${config.MCP_COD_USUARIO} no es desarrollador`);
     const validador = new Validador();
     const mediciones: MedicionEstimada[] = [];

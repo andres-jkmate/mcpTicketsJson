@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import type { EsquemaJson } from './definicion.js';
+import type { EsquemaJson } from '@mcp-jkmate/core';
 
 /** Valores de dominio (design D4). Los tests de integración los comparan contra la base. */
 export const ESTADOS_TICKET = [

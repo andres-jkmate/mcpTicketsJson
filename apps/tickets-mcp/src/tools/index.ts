@@ -1,5 +1,6 @@
-import type { AccesoDatos } from '../db/firebird.js';
-import type { DefinicionTool } from './definicion.js';
+import type { CualquierTool } from '@mcp-jkmate/core';
+import type { AccesoDatos } from '@mcp-jkmate/firebird';
+import type { SesionTickets } from '../sesion.js';
 import { crearListarTareas } from './listar-tareas.js';
 import { crearListarTickets } from './listar-tickets.js';
 import { crearObtenerContextoTicket } from './obtener-contexto-ticket.js';
@@ -11,7 +12,6 @@ export interface DependenciasTools {
 }
 
 /** Las tools que publica el servidor. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function crearTools(deps: DependenciasTools): DefinicionTool<any, any>[] {
+export function crearTools(deps: DependenciasTools): CualquierTool<SesionTickets>[] {
   return [crearObtenerContextoTicket(deps), crearListarTickets(deps), crearListarTareas(deps), crearResumirTickets(deps)];
 }

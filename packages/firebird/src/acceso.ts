@@ -1,7 +1,5 @@
 import Firebird from 'node-firebird';
-import type { Config } from '../config.js';
-import { ErrorTool } from '../errores.js';
-import type { Medidor } from '../tools/definicion.js';
+import { ErrorTool, type Medidor } from '@mcp-jkmate/core';
 
 /** Fila de un SP: columnas en mayúsculas, como las devuelve Firebird. */
 export type Fila = Record<string, unknown>;
@@ -17,8 +15,13 @@ export interface AccesoDatos {
    * Cada llamada a `ejecutarSp` suma 1 en `medidor.llamadasBase`.
    */
   enTransaccion<T>(trabajo: (ejecutarSp: EjecutarSp) => Promise<T>, medidor?: Medidor): Promise<T>;
-  /** USUARIOS.COD_DESARROLLADOR del usuario, o null. */
-  codDesarrolladorDeUsuario(codUsuario: number): Promise<number | null>;
+  /**
+   * Ejecuta una consulta fija fuera de los SP (por ejemplo, para resolver la sesión al arrancar).
+   * USO RESTRINGIDO: `sql` tiene que ser una constante escrita en el código, nunca armada con el
+   * input de una tool; los valores van siempre como `parametros`. Todo lo que viene de una tool
+   * pasa por `enTransaccion` y un SP.
+   */
+  consultar<T extends Fila = Fila>(sql: string, parametros: ValorParametro[]): Promise<T[]>;
   cerrar(): Promise<void>;
 }
 
@@ -63,22 +66,32 @@ export function esBaseNoDisponible(error: unknown): boolean {
   return /connection (is )?(lost|closed|shutdown)|socket|timeout/i.test(mensaje);
 }
 
-function errorBaseNoDisponible(): ErrorTool {
-  return new ErrorTool('BASE_NO_DISPONIBLE', 'La base de datos de tickets no está disponible en este momento. Reintentá en unos minutos.');
+export const MENSAJE_NO_DISPONIBLE = 'La base de datos no está disponible en este momento. Reintentá en unos minutos.';
+
+export interface ConfigFirebird {
+  FIREBIRD_HOST: string;
+  FIREBIRD_PORT: number;
+  FIREBIRD_DATABASE: string;
+  FIREBIRD_USER: string;
+  FIREBIRD_PASSWORD?: string | undefined;
+  FIREBIRD_POOL_MAX: number;
 }
 
-/** Convierte errores de conexión en BASE_NO_DISPONIBLE; el resto sigue igual (sale como ERROR_INTERNO). */
-function traducir(error: unknown): unknown {
-  return esBaseNoDisponible(error) ? errorBaseNoDisponible() : error;
+export interface OpcionesAccesoFirebird {
+  /** Mensaje de BASE_NO_DISPONIBLE que ve el agente (cada MCP puede nombrar su base). */
+  mensajeNoDisponible?: string;
+  connectTimeout?: number;
 }
 
-type ConfigFirebird = Pick<
-  Config,
-  'FIREBIRD_HOST' | 'FIREBIRD_PORT' | 'FIREBIRD_DATABASE' | 'FIREBIRD_USER' | 'FIREBIRD_PASSWORD' | 'FIREBIRD_POOL_MAX'
->;
-
-export function crearAccesoFirebird(config: ConfigFirebird, opcionesExtra: { connectTimeout?: number } = {}): AccesoDatos {
+export function crearAccesoFirebird(config: ConfigFirebird, opcionesExtra: OpcionesAccesoFirebird = {}): AccesoDatos {
   if (!config.FIREBIRD_DATABASE) throw new Error('Falta FIREBIRD_DATABASE');
+  const mensajeNoDisponible = opcionesExtra.mensajeNoDisponible ?? MENSAJE_NO_DISPONIBLE;
+
+  /** Convierte errores de conexión en BASE_NO_DISPONIBLE; el resto sigue igual (sale como ERROR_INTERNO). */
+  function traducir(error: unknown): unknown {
+    return esBaseNoDisponible(error) ? new ErrorTool('BASE_NO_DISPONIBLE', mensajeNoDisponible) : error;
+  }
+
   const pool = Firebird.pool(config.FIREBIRD_POOL_MAX, {
     host: config.FIREBIRD_HOST,
     port: config.FIREBIRD_PORT,
@@ -140,14 +153,11 @@ export function crearAccesoFirebird(config: ConfigFirebird, opcionesExtra: { con
       });
     },
 
-    async codDesarrolladorDeUsuario(codUsuario) {
+    async consultar<T extends Fila = Fila>(sql: string, parametros: ValorParametro[]) {
       return conConexion(async (db) => {
         try {
-          const filas = await db.queryAsync<{ COD_DESARROLLADOR: number | null }>(
-            'SELECT COD_DESARROLLADOR FROM USUARIOS WHERE COD_USUARIO = ?',
-            [codUsuario],
-          );
-          return filas[0]?.COD_DESARROLLADOR ?? null;
+          const filas = await db.queryAsync<Fila>(sql, parametros);
+          return filas.map(normalizarFila) as T[];
         } catch (error) {
           throw traducir(error);
         }

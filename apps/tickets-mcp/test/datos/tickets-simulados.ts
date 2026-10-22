@@ -1,5 +1,4 @@
-import type { Fila, ValorParametro } from '../../src/db/firebird.js';
-import { aFecha } from '../../src/mapeo/fecha.js';
+import { aFecha, type Fila, type ValorParametro } from '@mcp-jkmate/firebird';
 import { r, type ManejadorSp } from '../apoyo.js';
 
 /** Ticket de la tabla simulada: lo que PRV_LIST_TICKETS_BASE_AG sabe de cada uno. */

@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { resumirTickets, type DimensionResumen, type FilaResumen } from '../db/sp.js';
-import { aRefNombre, type RefNombre } from '../mapeo/valores.js';
-import type { DefinicionTool } from './definicion.js';
+import { aRefNombre, type RefNombre } from '@mcp-jkmate/firebird';
+import type { DefinicionTool } from '@mcp-jkmate/core';
 import { ANOTACIONES_LECTURA, conDefs } from './esquemas.js';
 import { aFiltrosSp, FILTROS_TICKETS_JSON, filtrosTicketsZod, MENSAJE_RANGO, rangoValido, sufijoAbiertos } from './filtros-tickets.js';
+import type { SesionTickets } from '../sesion.js';
 import type { DependenciasTools } from './index.js';
 import { plural } from './mapeo-comun.js';
 
@@ -108,7 +109,7 @@ const CONTEO_REF = {
   },
 };
 
-export function crearResumirTickets({ acceso }: DependenciasTools): DefinicionTool<Entrada, ResumenTickets> {
+export function crearResumirTickets({ acceso }: DependenciasTools): DefinicionTool<Entrada, ResumenTickets, SesionTickets> {
   return {
     nombre: 'resumir_tickets',
     titulo: 'Resumir tickets',

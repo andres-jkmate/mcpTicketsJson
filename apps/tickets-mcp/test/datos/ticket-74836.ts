@@ -1,4 +1,4 @@
-import type { Fila } from '../../src/db/firebird.js';
+import type { Fila } from '@mcp-jkmate/firebird';
 import { r, type ManejadorSp } from '../apoyo.js';
 
 /*

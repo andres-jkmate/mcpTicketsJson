@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import type { AccesoDatos } from '../../src/db/firebird.js';
+import type { AccesoDatos } from '@mcp-jkmate/firebird';
 import { crearTools } from '../../src/tools/index.js';
 import type { ListadoTareas } from '../../src/tools/listar-tareas.js';
 import type { ListadoTickets } from '../../src/tools/listar-tickets.js';

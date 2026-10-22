@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import type { Sesion } from '../auth/sesion.js';
+import type { SesionTickets } from '../sesion.js';
 import { listarTareas, type FiltrosTareas } from '../db/sp.js';
 import { ErrorTool } from '../errores.js';
-import type { DefinicionTool } from './definicion.js';
+import type { DefinicionTool } from '@mcp-jkmate/core';
 import {
   ANOTACIONES_LECTURA,
   conDefs,
@@ -57,7 +57,7 @@ export interface ListadoTareas {
 }
 
 /** "yo" → desarrollador de la sesión; si la sesión no tiene uno, es un error del pedido. */
-function desarrolladorDe(valor: number | 'yo' | undefined, sesion: Sesion, campo: string): number | undefined {
+function desarrolladorDe(valor: number | 'yo' | undefined, sesion: SesionTickets, campo: string): number | undefined {
   if (valor !== 'yo') return valor;
   if (sesion.codDesarrollador === null) {
     throw new ErrorTool(
@@ -68,7 +68,7 @@ function desarrolladorDe(valor: number | 'yo' | undefined, sesion: Sesion, campo
   return sesion.codDesarrollador;
 }
 
-export function aFiltrosTareas(a: Entrada, sesion: Sesion): FiltrosTareas {
+export function aFiltrosTareas(a: Entrada, sesion: SesionTickets): FiltrosTareas {
   // Sin persona ni ticket, por defecto son las tareas propias.
   const desarrollador = a.desarrollador ?? (a.responsable === undefined && a.ticketId === undefined ? 'yo' : undefined);
   const codDesarrollador = desarrolladorDe(desarrollador, sesion, 'desarrollador');
@@ -101,7 +101,7 @@ export function resumirTareas(l: ListadoTareas): string {
   return `${cabecera}. ${items.join('; ')}.`;
 }
 
-export function crearListarTareas({ acceso, zonaHoraria }: DependenciasTools): DefinicionTool<Entrada, ListadoTareas> {
+export function crearListarTareas({ acceso, zonaHoraria }: DependenciasTools): DefinicionTool<Entrada, ListadoTareas, SesionTickets> {
   return {
     nombre: 'listar_tareas',
     titulo: 'Listar tareas de desarrollo',

@@ -7,8 +7,9 @@
  */
 import Firebird from 'node-firebird';
 import type { Config } from '../../src/config.js';
-import { crearAccesoFirebird, type AccesoDatos } from '../../src/db/firebird.js';
+import { crearAccesoFirebird, type AccesoDatos } from '@mcp-jkmate/firebird';
 import { listarTareas, listarTickets, obtenerTicket } from '../../src/db/sp.js';
+import { codDesarrolladorDeUsuario } from '../../src/db/usuarios.js';
 import type { Caso } from './casos.js';
 
 /** Más de esta cantidad, el verificador acepta el total en lugar de todos los ids (D8). */
@@ -155,7 +156,7 @@ async function todas<F extends { TOTAL: number }>(pagina: (limite: number, despl
 
 /** Obtiene una vez, al empezar, los datos esperados de cada caso (D8). Solo lectura. */
 export async function obtenerReferencia(base: BaseLectura, casos: Caso[], codUsuario: number): Promise<VerdadReferencia> {
-  const codDesarrollador = await base.acceso.codDesarrolladorDeUsuario(codUsuario);
+  const codDesarrollador = await codDesarrolladorDeUsuario(base.acceso, codUsuario);
   if (codDesarrollador === null) throw new Error(`El usuario ${codUsuario} no es desarrollador: no se pueden armar los casos de tareas`);
   const ref: VerdadReferencia = { codUsuario, codDesarrollador };
 

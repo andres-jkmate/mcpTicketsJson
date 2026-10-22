@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { accesoSimulado, conectarCliente, r, type ManejadorSp } from '../../test/apoyo.js';
 import { tareaSimulada } from '../../test/datos/ticket-74836.js';
-import type { Sesion } from '../auth/sesion.js';
-import type { Fila } from '../db/firebird.js';
-import { aFecha } from '../mapeo/fecha.js';
+import type { SesionTickets } from '../sesion.js';
+import { aFecha, type Fila } from '@mcp-jkmate/firebird';
 import { crearListarTareas, type ListadoTareas } from './listar-tareas.js';
 
 const ZONA = 'America/Argentina/Buenos_Aires';
@@ -53,7 +52,7 @@ function tareasSimuladas(tareas: TareaSimulada[] = TAREAS): ManejadorSp {
   };
 }
 
-async function listar(args: Record<string, unknown>, opciones: { tareas?: TareaSimulada[]; sesion?: Sesion } = {}) {
+async function listar(args: Record<string, unknown>, opciones: { tareas?: TareaSimulada[]; sesion?: SesionTickets } = {}) {
   const { acceso, llamadas } = accesoSimulado({ PROC_LIST_TAREAS_AG: tareasSimuladas(opciones.tareas) });
   const { cliente } = await conectarCliente([crearListarTareas({ acceso, zonaHoraria: ZONA })], opciones.sesion);
   await cliente.listTools();

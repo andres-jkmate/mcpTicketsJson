@@ -1,8 +1,8 @@
 import type { Logger } from 'pino';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import type { z } from 'zod';
-import type { Sesion } from '../auth/sesion.js';
-import { ESQUEMA_ERROR } from '../errores.js';
+import type { Sesion } from './sesion.js';
+import { esquemaError } from './errores.js';
 
 export type EsquemaJson = Record<string, unknown>;
 
@@ -11,8 +11,9 @@ export interface Medidor {
   llamadasBase: number;
 }
 
-export interface ContextoTool {
-  sesion: Sesion;
+export interface ContextoTool<S extends Sesion = Sesion> {
+  sesion: S;
+  /** Logger de la invocación: todo lo que se loguee con él lleva el `idCorrelacion` de la llamada. */
   logger: Logger;
   medidor: Medidor;
 }
@@ -23,7 +24,7 @@ export interface RespuestaTool<O> {
   resumen: string;
 }
 
-export interface DefinicionTool<I = unknown, O = unknown> {
+export interface DefinicionTool<I = unknown, O = unknown, S extends Sesion = Sesion> {
   nombre: string;
   titulo: string;
   descripcion: string;
@@ -34,14 +35,14 @@ export interface DefinicionTool<I = unknown, O = unknown> {
   annotations: ToolAnnotations;
   /** Validador real del input (aplica defaults). Un fallo es PARAMETRO_INVALIDO. */
   entrada: z.ZodType<I>;
-  ejecutar(args: I, ctx: ContextoTool): Promise<RespuestaTool<O>>;
+  ejecutar(args: I, ctx: ContextoTool<S>): Promise<RespuestaTool<O>>;
 }
 
 /**
- * Agrega a un outputSchema de éxito la forma `{ error }`: el cliente del SDK TS valida
- * structuredContent contra el outputSchema aunque isError sea true.
+ * Agrega a un outputSchema de éxito la forma `{ error }` con los códigos del servidor: el cliente
+ * del SDK TS valida structuredContent contra el outputSchema aunque isError sea true.
  */
-export function conError(esquema: EsquemaJson): EsquemaJson {
+export function conError(esquema: EsquemaJson, codigos: readonly string[]): EsquemaJson {
   const { required, properties, ...resto } = esquema as {
     required?: string[];
     properties?: Record<string, unknown>;
@@ -49,7 +50,7 @@ export function conError(esquema: EsquemaJson): EsquemaJson {
   return {
     ...resto,
     type: 'object',
-    properties: { ...(properties ?? {}), error: ESQUEMA_ERROR },
+    properties: { ...(properties ?? {}), error: esquemaError(codigos) },
     anyOf: [{ required: required ?? [] }, { required: ['error'] }],
   };
 }

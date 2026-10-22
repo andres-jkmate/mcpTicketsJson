@@ -17,16 +17,17 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:integracion": "node --env-file-if-exists=.env ../../node_modules/vitest/vitest.mjs run test/integracion test/stdio.test.ts src/db",
+    "test:integracion": "node --env-file-if-exists=.env ../../node_modules/vitest/vitest.mjs run test/integracion test/stdio.test.ts",
     "medir": "npm run build && tsx --conditions=@mcp-jkmate/source --env-file-if-exists=.env scripts/medir-eficiencia.ts",
     "medir:agente": "npm run build && tsx --conditions=@mcp-jkmate/source --env-file-if-exists=.env scripts/medir-agente.ts",
     "estimar:agente": "npm run build && tsx --conditions=@mcp-jkmate/source --env-file-if-exists=.env scripts/estimar-agente.ts"
   },
   "dependencies": {
+    "@mcp-jkmate/core": "*",
+    "@mcp-jkmate/firebird": "*",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "node-firebird": "^2.18.2",
     "pino": "^10.4.0",
-    "pino-seq": "^4.0.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
