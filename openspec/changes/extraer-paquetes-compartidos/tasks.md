@@ -46,8 +46,10 @@
 
 ## 7. Plantilla de MCP
 
-- [ ] 7.1 Crear `apps/_template-mcp` (D10): tool de ejemplo sobre `AccesoDatos` con descripción según D9, `config.ts`, `errores.ts`, `index.ts` stdio, `.env.example`, un test unitario con acceso simulado y un test de contrato (input inválido, input válido, descripciones, `tools/list`). Se verifica con `npm test -w apps/_template-mcp` en verde.
-- [ ] 7.2 Escribir el README de la plantilla con los pasos para crear `apps/<nombre>-mcp` (copiar, renombrar el paquete, implementar los SP y las tools, `.env`, tests, alta en `claude_desktop_config.json`). Se verifica siguiendo los pasos en una copia temporal (`apps/prueba-mcp`), que compila, pasa sus tests y responde `tools/list`. Después se borra la copia.
+- [x] 7.1 Crear `apps/_template-mcp` (D10): tool de ejemplo sobre `AccesoDatos` con descripción según D9, `config.ts`, `errores.ts`, `index.ts` stdio, `.env.example`, un test unitario con acceso simulado y un test de contrato (input inválido, input válido, descripciones, `tools/list`). Se verifica con `npm test -w apps/_template-mcp` en verde.
+  - Tool `obtener_ejemplo` sobre `PROC_GET_EJEMPLO_AG` (no existe; solo muestra la forma) y código propio `EJEMPLO_NO_ENCONTRADO`. `npm test -w apps/_template-mcp`: 9 en verde. El `dist` responde `tools/list` por stdio sin base.
+- [x] 7.2 Escribir el README de la plantilla con los pasos para crear `apps/<nombre>-mcp` (copiar, renombrar el paquete, implementar los SP y las tools, `.env`, tests, alta en `claude_desktop_config.json`). Se verifica siguiendo los pasos en una copia temporal (`apps/prueba-mcp`), que compila, pasa sus tests y responde `tools/list`. Después se borra la copia.
+  - Se siguieron los pasos en `apps/prueba-mcp` (copia con robocopy, renombre y `npm install`): typecheck, lint, 9 tests y build en verde, y `tools/list` respondió `obtener_ejemplo`. La copia se borró después.
 
 ## 8. Documentación y configuración del repo
 
