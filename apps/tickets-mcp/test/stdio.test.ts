@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -7,8 +8,11 @@ import { serializeMessage } from '@modelcontextprotocol/sdk/shared/stdio.js';
 import { hayProcedimientosAg } from './integracion/base.js';
 
 const RAIZ = resolve(import.meta.dirname, '..');
-const TSX = resolve(RAIZ, 'node_modules/tsx/dist/cli.mjs');
+// Con workspaces, node_modules queda en la raíz del monorepo: se resuelve como lo haría node.
+const TSX = createRequire(import.meta.url).resolve('tsx/cli');
 const ENTRADA = resolve(RAIZ, 'src/index.ts');
+/** Los paquetes del monorepo se cargan desde su código fuente, como en `npm run dev`. */
+const ARGS_TSX = [TSX, '--conditions=@mcp-jkmate/source', ENTRADA];
 
 /** Entorno mínimo para el proceso hijo: sin heredar FIREBIRD_* ni MCP_* del entorno del test. */
 function entornoBase(): Record<string, string> {
@@ -28,7 +32,7 @@ describe('transporte stdio', () => {
   });
 
   it('sin configuración falla con un mensaje claro en stderr y no escribe en stdout', () => {
-    const r = spawnSync(process.execPath, [TSX, ENTRADA], { env: entornoBase(), encoding: 'utf8', timeout: 30_000 });
+    const r = spawnSync(process.execPath, ARGS_TSX, { env: entornoBase(), encoding: 'utf8', timeout: 30_000 });
     expect(r.status).toBe(1);
     expect(r.stdout).toBe('');
     expect(r.stderr).toContain('MCP_COD_USUARIO');
@@ -43,7 +47,7 @@ describe.skipIf(!hayAg)('sesión real por stdio (como la lanza Claude Desktop)',
     const env = process.env;
     const transporte = new StdioClientTransport({
       command: process.execPath,
-      args: [TSX, ENTRADA],
+      args: ARGS_TSX,
       env: {
         ...entornoBase(),
         MCP_COD_USUARIO: '15169',

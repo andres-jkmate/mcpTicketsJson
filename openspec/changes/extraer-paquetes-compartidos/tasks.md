@@ -9,16 +9,18 @@
 
 ## 2. Estructura del monorepo (solo `git mv`)
 
-- [ ] 2.1 Mover con `git mv`, sin tocar contenidos, todo lo de tickets a `apps/tickets-mcp/` (`src/`, `scripts/`, `test/`, `db/`, `medicion/`, `docs/`, `tsconfig*.json`, `vitest.config.ts`, `.env.example`, `.mcp.json.example`, `README.md` y `package.json`) según la tabla de design D3. Hacer el commit solo con los movimientos. Se verifica con `git log --follow apps/tickets-mcp/src/tools/ejecutar.ts`, que muestra los commits anteriores.
+- [x] 2.1 Mover con `git mv`, sin tocar contenidos, todo lo de tickets a `apps/tickets-mcp/` (`src/`, `scripts/`, `test/`, `db/`, `medicion/`, `docs/`, `tsconfig*.json`, `vitest.config.ts`, `.env.example`, `.mcp.json.example`, `README.md` y `package.json`) según la tabla de design D3. Hacer el commit solo con los movimientos. Se verifica con `git log --follow apps/tickets-mcp/src/tools/ejecutar.ts`, que muestra los commits anteriores.
+  - Commit `513c0e8`; `git log --follow` muestra también el commit inicial. El `.gitignore` raíz pasó a usar `**/medicion/resultados/` y `**/medicion/agente/corridas/`.
 
 ## 3. Raíz del monorepo
 
-- [ ] 3.1 Crear el `package.json` raíz (`private`, `workspaces: ["packages/*", "apps/*"]`, scripts `build`, `test`, `lint` y `typecheck` que delegan con `--workspaces --if-present`), `tsconfig.base.json` con las opciones actuales, un `eslint.config.js` raíz y un `vitest.config.ts` raíz con `projects` y `resolve.conditions: ['source']` (design D1, D2). Ajustar el `package.json` de la app (nombre `@mcp-jkmate/tickets-mcp`, `tsx --conditions=source` en `dev` y en los scripts de medición). Se verifica con `npm install` en la raíz y `npm test` en verde, con la misma cantidad de tests que en 1.1.
-- [ ] 3.2 Ajustar `test/stdio.test.ts` para resolver `tsx` con `createRequire` (design D11). Se verifica con `npm test`, que incluye ese test.
+- [x] 3.1 Crear el `package.json` raíz (`private`, `workspaces: ["packages/*", "apps/*"]`, scripts `build`, `test`, `lint` y `typecheck` que delegan con `--workspaces --if-present`), `tsconfig.base.json` con las opciones actuales, un `eslint.config.js` raíz y un `vitest.config.ts` raíz con `projects` y `resolve.conditions` con la condición de fuentes (design D1, D2). Ajustar el `package.json` de la app (nombre `@mcp-jkmate/tickets-mcp`, `tsx --conditions=@mcp-jkmate/source` en `dev` y en los scripts de medición). Se verifica con `npm install` en la raíz y `npm test` en verde, con la misma cantidad de tests que en 1.1.
+  - La condición pasó a llamarse `@mcp-jkmate/source` (ver design D2). Las condiciones de Vitest están en `vitest.compartido.ts`. Resultado: 233 en verde y 16 saltados, como en 1.1. `typecheck`, `lint` y `build` en verde.
+- [x] 3.2 Ajustar `test/stdio.test.ts` para resolver `tsx` con `createRequire` (design D11). Se verifica con `npm test`, que incluye ese test.
 
 ## 4. Paquete `@mcp-jkmate/firebird`
 
-- [ ] 4.1 Crear `packages/firebird` (`package.json` con `exports` y la condición `source`, `tsconfig` con `composite`, `src/index.ts`) y mover con `git mv` `db/firebird.ts` → `acceso.ts` y `mapeo/` → `mapeo/`, con sus tests. Extraer `aplicarContrato` de `db/sp.ts` a `contrato.ts`, junto con sus tests. Declarar `node-firebird` como dependencia del paquete (design D3, Risks). Se verifica con los tests del paquete en verde (`npm test -w packages/firebird`).
+- [ ] 4.1 Crear `packages/firebird` (`package.json` con `exports` y la condición `@mcp-jkmate/source`, `tsconfig` con `composite`, `src/index.ts`) y mover con `git mv` `db/firebird.ts` → `acceso.ts` y `mapeo/` → `mapeo/`, con sus tests. Extraer `aplicarContrato` de `db/sp.ts` a `contrato.ts`, junto con sus tests. Declarar `node-firebird` como dependencia del paquete (design D3, Risks). Se verifica con los tests del paquete en verde (`npm test -w packages/firebird`).
 - [ ] 4.2 Agregar `consultar<T>(sql, parametros)` a `AccesoDatos` con el comentario de uso restringido de D6, sacar `codDesarrolladorDeUsuario` del paquete y agregar la opción `mensajeNoDisponible` (D7) con un default genérico. Se verifica con tests: `consultar` traduce un error de red a `BASE_NO_DISPONIBLE` y el mensaje configurado aparece en el error.
 - [ ] 4.3 En tickets, implementar `codDesarrolladorDeUsuario` sobre `consultar`, pasar el mensaje actual de `BASE_NO_DISPONIBLE` y cambiar los imports a `@mcp-jkmate/firebird`. Se verifica con `npm test` y `npm run typecheck` en verde.
 
@@ -47,5 +49,5 @@
 
 ## 9. Verificación de integración
 
-- [ ] 9.1 En un clon limpio de la rama (sin `dist/` ni `node_modules`): `npm install`, `npm run build`, `npm run lint`, `npm run typecheck` y `npm test` en verde (design D2, riesgo de la condición `source`).
+- [ ] 9.1 En un clon limpio de la rama (sin `dist/` ni `node_modules`): `npm install`, `npm run build`, `npm run lint`, `npm run typecheck` y `npm test` en verde (design D2, riesgo de la condición `@mcp-jkmate/source`).
 - [ ] 9.2 Con la base de prueba: `npm run test:integracion -w apps/tickets-mcp` en verde y `npm run medir -w apps/tickets-mcp` con las mismas cifras de la v2 que en 1.2.

@@ -2,7 +2,7 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist/', 'node_modules/', 'medicion/resultados/'] },
+  { ignores: ['**/dist/', '**/node_modules/', '**/medicion/resultados/'] },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -13,7 +13,7 @@ export default tseslint.config(
   },
   {
     // Los tests de integración informan tiempos medidos contra la base.
-    files: ['test/integracion/**/*.ts'],
+    files: ['**/test/integracion/**/*.ts'],
     rules: { 'no-console': 'off' },
   },
 );

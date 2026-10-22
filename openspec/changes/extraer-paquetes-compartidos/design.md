@@ -31,13 +31,14 @@ La motivación está en `proposal.md` y los requisitos en `specs/`. Esta secció
 ### D1. npm workspaces, sin Nx
 El `package.json` raíz declara `workspaces: ["packages/*", "apps/*"]` y sus scripts delegan con `--workspaces`. **Alternativas:** Nx (caché y "affected", útil con muchos MCPs, pero hoy suma configuración sin beneficio con 2 o 3 apps), pnpm (cambia la herramienta del equipo) y turborepo (lo mismo que Nx, a menor escala). Se reevalúa Nx al pasar de 4 o 5 apps; la estructura `apps/` + `packages/` es la que Nx espera, así que migrar no obliga a mover carpetas.
 
-### D2. Paquetes por nombre, con una condición `source` para desarrollo
+### D2. Paquetes por nombre, con una condición `@mcp-jkmate/source` para desarrollo
 Los paquetes se llaman `@mcp-jkmate/core` y `@mcp-jkmate/firebird`. Su `package.json` exporta:
 ```json
-"exports": { ".": { "source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" } }
+"exports": { ".": { "@mcp-jkmate/source": "./src/index.ts", "types": "./dist/index.d.ts", "default": "./dist/index.js" } }
 ```
 - **Build y producción:** `tsc -b` con project references compila los paquetes antes que las apps, y `node` carga `dist/`.
-- **Tests y desarrollo:** Vitest (`resolve.conditions: ['source']`) y `tsx` (`--conditions=source`) usan el código fuente directo, así que no hace falta compilar los paquetes para correr tests ni `npm run dev`.
+- **Tests y desarrollo:** Vitest (`resolve.conditions` con `@mcp-jkmate/source`, en `vitest.compartido.ts`) y `tsx` (`--conditions=@mcp-jkmate/source`) usan el código fuente directo, así que no hace falta compilar los paquetes para correr tests ni `npm run dev`. TypeScript la recibe por `customConditions` en `tsconfig.base.json`.
+- **Por qué con scope:** la condición iba a llamarse `source`, pero hay dependencias de terceros que la usan para apuntar a su `.ts` (por ejemplo `eventsource-parser`, del SDK de MCP), y con `source` Vitest intentaba cargar ese `.ts` desde `node_modules`. Con el scope del monorepo solo la publican nuestros paquetes. Es el mismo patrón que usa Nx.
 
 **Alternativas:** compilar los paquetes antes de cada test (lento y fácil de olvidar) y `paths` de TypeScript (resuelve tipos pero no el runtime de Node).
 
@@ -109,7 +110,7 @@ Está dentro de `workspaces`, así que compila y se testea con el resto y no se 
 ## Risks / Trade-offs
 
 - **[`git mv` masivo con edición de imports en el mismo commit]** → Git puede no detectar el rename y el historial se corta. Mitigación: hacer un commit solo con los `git mv` y otro con los cambios de contenido.
-- **[La condición `source` mal configurada en alguna herramienta]** → Los tests usarían `dist/` viejo o fallarían al resolver. Mitigación: `npm test` en un clon limpio sin `dist/` tiene que pasar; se agrega como paso de verificación.
+- **[La condición `@mcp-jkmate/source` mal configurada en alguna herramienta]** → Los tests usarían `dist/` viejo o fallarían al resolver. Mitigación: `npm test` en un clon limpio sin `dist/` tiene que pasar; se agrega como paso de verificación.
 - **[Dos copias de `node-firebird` o del SDK de MCP]** → Con versiones distintas entre paquetes, los tipos de `CallToolResult` dejan de ser compatibles. Mitigación: las dependencias compartidas se declaran como `peerDependencies` en los paquetes, con una sola versión en la app.
 - **[El snapshot de `tools/list` frena cambios legítimos futuros]** → Es intencional: cambiar el contrato tiene que ser explícito. El change que lo cambie actualiza el snapshot.
 - **[Usuarios con la ruta vieja en `claude_desktop_config.json`]** → El MCP deja de arrancar. Mitigación: aviso en el README y en `docs/instalacion.md`. Hoy el único usuario es el autor.
