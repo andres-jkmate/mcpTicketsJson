@@ -58,8 +58,11 @@
 - [x] 8.2 Actualizar `openspec/config.yaml`: el propósito pasa a ser el monorepo de MCPs v2 para agentes, la decisión del 2026-10-15 se reemplaza por la del 2026-10-21 (monorepo propio, separado de `jkmate-mcp`), `db/procedimientos/` pasa a ser `apps/<mcp>/db/procedimientos/` y se agrega la regla de la plantilla de descripción para MCPs nuevos. Se verifica con `openspec validate --specs` en verde y revisión del usuario.
   - `openspec validate --specs`: 6 en verde. **Falta la revisión del usuario** del texto de `openspec/config.yaml`.
 - [ ] 8.3 Mover el `.env` local a `apps/tickets-mcp/.env` y actualizar la ruta en `claude_desktop_config.json` (avisar al usuario: son archivos de su máquina, no del repo). Se verifica arrancando el MCP desde Claude Desktop y viendo las 4 tools.
+  - Pendiente del usuario. El `.env` se movió a `apps/tickets-mcp/.env`. No se encontró `claude_desktop_config.json` en esta máquina (ni en `%APPDATA%\Claude` ni en el paquete MSIX de Claude), así que no se pudo actualizar la ruta ni verificar las 4 tools en Claude Desktop.
 
 ## 9. Verificación de integración
 
-- [ ] 9.1 En un clon limpio de la rama (sin `dist/` ni `node_modules`): `npm install`, `npm run build`, `npm run lint`, `npm run typecheck` y `npm test` en verde (design D2, riesgo de la condición `@mcp-jkmate/source`).
+- [x] 9.1 En un clon limpio de la rama (sin `dist/` ni `node_modules`): `npm install`, `npm run build`, `npm run lint`, `npm run typecheck` y `npm test` en verde (design D2, riesgo de la condición `@mcp-jkmate/source`).
+  - Clon limpio de `monorepo-mcps`: `npm install`, `build`, `lint` y `typecheck` en verde, y `npm test` en verde después de borrar todos los `dist/` (31 + 18 + 9 + 201, 16 saltados). `npx vitest run` desde la raíz (projects) también en verde, después de corregir un test que leía `medicion/tickets.json` relativo al directorio de trabajo.
 - [ ] 9.2 Con la base de prueba: `npm run test:integracion -w apps/tickets-mcp` en verde y `npm run medir -w apps/tickets-mcp` con las mismas cifras de la v2 que en 1.2.
+  - Pendiente: `npm run test:integracion -w apps/tickets-mcp` da 17 en verde, y la medición de solo la v2 es idéntica a `medicion-v2-antes.json` (ver 1.2 y 5.5). `npm run medir -w apps/tickets-mcp` compila y arranca, pero corta con `fetch failed` porque la v1 no está levantada. Falta correrlo con la v1 disponible.

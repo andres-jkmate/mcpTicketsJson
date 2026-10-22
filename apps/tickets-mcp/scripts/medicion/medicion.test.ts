@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { medirResultado } from '../agente/conexion.js';
+import { medirResultado, RAIZ } from '../agente/conexion.js';
 import { cargarConjunto } from './conjunto.js';
 import { fechaCreacionV1, medirContexto, medirListado, type Llamador, type RespuestaMedida } from './estrategias.js';
 import { aMarkdown, armarReporte, reduccion } from './reporte.js';
@@ -41,7 +42,7 @@ const v2 = () =>
 
 describe('conjunto de medición', () => {
   it('el archivo versionado es válido e incluye el #74836', () => {
-    const conjunto = cargarConjunto(JSON.parse(readFileSync('medicion/tickets.json', 'utf8')));
+    const conjunto = cargarConjunto(JSON.parse(readFileSync(join(RAIZ, 'medicion', 'tickets.json'), 'utf8')));
     expect(conjunto.tickets).toContain(74836);
     expect(conjunto.listados.length).toBeGreaterThan(0);
   });
