@@ -5,80 +5,35 @@ context: |
   All artifacts must be written in es.
   Keep OpenSpec structural headings and SHALL/MUST keywords in English.
 
-  ## Propósito
-  Monorepo de los MCPs de JKMate "v2 para agentes" (repo `mcpTicketsJson`, npm workspaces).
-  Cada MCP vive en `apps/<nombre>-mcp` y usa los paquetes compartidos de `packages/`
-  (`@mcp-jkmate/core`: wrapper de tools, errores, servidor y logger; `@mcp-jkmate/firebird`: acceso
-  a Firebird). Un MCP nuevo se crea copiando `apps/_template-mcp` (ver su README).
-  Los MCPs v2 ofrecen pocas tools diseñadas a mano para agentes, que devuelven JSON tipado. La forma
-  de los datos se resuelve en la base con SP específicos para agentes.
-  El primero es `apps/tickets-mcp`, que reemplaza progresivamente a `tickets-jkmate-mcp` (23 tools
-  "pasamano" de stored procedures, con respuestas ruidosas y sin tools compuestas, búsqueda por
-  texto, agregaciones ni paginación con total). Su primera etapa fue un experimento que debía
-  demostrar con mediciones (caracteres y cantidad de llamadas) la reducción de costo frente a la v1.
-  Decisión tomada: NO construir un intérprete genérico de contratos.
+  ## Repo
+  Monorepo (npm workspaces, sin Nx) de los MCPs de JKMate v2 para agentes, separado de `jkmate-mcp`.
+  Mapa de apps y paquetes, y comandos: `README.md`.
+  - `apps/<nombre>-mcp`: un MCP por carpeta. Hoy `apps/tickets-mcp`; los nuevos se copian de
+    `apps/_template-mcp` (ver su README).
+  - `packages/core` y `packages/firebird`: lo común. Un MCP no reimplementa lo que ya dan
+    (validación, errores, log, servidor, acceso a Firebird); si falta algo, se suma al paquete.
+  - TypeScript, transporte stdio, Pino hacia Seq, Vitest.
 
-  ## Estándar del equipo (obligatorio)
-  - TypeScript, transporte MCP stdio: el servidor corre local, lanzado por el cliente (decisión del
-    2026-10-17; reemplazó a Streamable HTTP + OAuth).
-  - Nombres de tools en español, snake_case, forma verbo_sustantivo
-    (obtener_contexto_ticket, listar_tickets).
-  - Logging estructurado con Pino hacia Seq. Tests con Vitest.
-  - Monorepo propio de los MCPs v2 para agentes, con npm workspaces y sin Nx: NO forma parte del
-    monorepo Nx `jkmate-mcp` ni del registry de `apps/mcp-gateway` (decisión del 2026-10-21;
-    reemplazó a la de "repo independiente de tickets" del 2026-10-15).
-  - Un MCP no reimplementa lo que dan los paquetes compartidos (validación del input, errores
-    uniformes, log de cada invocación, servidor, acceso a Firebird). Si le falta algo, se agrega
-    al paquete.
+  ## Base de datos
+  - Firebird 3.x con `node-firebird` y charset UTF8. La lógica y la forma de los datos viven en SP
+    para agentes; convenciones en el hub JKMate-Knowledge `firebird/convenciones.md`.
+  - Nunca ejecutar DDL sin confirmación explícita. Los SP nuevos se proponen en el design.md; una vez
+    aplicados se versionan en `apps/<mcp>/db/procedimientos/` (ver `apps/tickets-mcp/db/README.md`).
+  - `conocimiento-jkmate-mcp` sirve de referencia, pero no refleja la base de tickets: los SP reales
+    los confirma el usuario.
 
-  ## Reglas de base de datos
-  - Firebird 3.x. La lógica de negocio vive en stored procedures.
-  - Naming, contrato RESULTADO/MENSAJE_ERROR, encabezado de comentarios, tipos de dato y
-    público/privado: seguir el hub JKMate-Knowledge `firebird/convenciones.md` (PROC_GET_,
-    PROC_LIST_, PRV_, ...). No duplicar esas reglas acá.
-  - No se ejecuta DDL sin confirmación explícita del usuario. Los SP nuevos se proponen en
-    el design.md del change; nunca se crean directamente. Una vez confirmados y aplicados, sus
-    scripts se versionan en `apps/<mcp>/db/procedimientos/` (uno por archivo, numerados en orden de
-    ejecución; ver `apps/tickets-mcp/db/README.md`) y el design los referencia en lugar de copiarlos.
-  - Para conocer tablas, SP y dependencias existentes usar las tools de `conocimiento-jkmate-mcp`
-    (db_buscar_exacto, db_buscar_texto, db_dependencias, db_dominio, db_similar). No copiar el
-    schema al repo. Ojo: ese catálogo es un agregado de instalaciones de clientes y NO refleja la
-    base de tickets de JKMate; los SP reales los confirma el usuario.
-  - Acceso a Firebird con `node-firebird` y charset de conexión UTF8 (decisión del 2026-10-16, sin
-    el código de la v1 disponible). Si aparece el mecanismo de `tickets-jkmate-mcp` y difiere, se
-    revisa en otro change.
+  ## Diseño de tools
+  - Nombres en español, snake_case, verbo_sustantivo. Pocas tools compuestas.
+  - `outputSchema` + `structuredContent`; `content` con un resumen y el mismo JSON (sin escapado Unicode).
+  - Campos camelCase, solo lo que un agente necesita, tipos consistentes (booleanos reales, fechas
+    ISO 8601 con offset). Listados sin textos largos, paginados y con total.
+  - El usuario que llama sale de `MCP_COD_USUARIO`, nunca de un parámetro.
+  - Annotations MCP en todas las tools. Errores con código estable: los base de `core` más los del
+    dominio en `src/errores.ts` de cada MCP.
+  - Descripción en cuatro partes ("Qué hace:", "Cuándo usarla:", "Parámetros:" con un `ej.:`,
+    "Qué NO hacer:"), verificada por el test de contrato. Tickets queda exceptuado por ahora.
 
-  ## Principios de diseño de tools
-  1. Pocas tools compuestas antes que muchas tools atómicas.
-  2. Toda tool declara `outputSchema` y responde con `structuredContent`. El `content` lleva dos
-     bloques de texto: un resumen y el mismo JSON serializado, porque hay clientes (Claude Desktop)
-     que solo le pasan `content` al modelo.
-  3. Solo los campos que un agente necesita. Sin duplicados, sin datos de UI.
-  4. Nombres de campos en camelCase, estables e independientes de los nombres de columna de los SP.
-  5. Tipos consistentes: un mismo dato tiene siempre el mismo tipo en todas las tools. Booleanos
-     reales, no 0/1. Fechas en ISO 8601 con offset.
-  6. JSON sin escapado Unicode.
-  7. Los listados no incluyen textos largos; el detalle va en otra tool o detrás de un parámetro
-     opcional.
-  8. Los listados paginan e informan el total.
-  9. La identidad del usuario que llama sale de la configuración del proceso (`MCP_COD_USUARIO`),
-     nunca de un parámetro. Filtrar por
-     OTRA persona (desarrollador, responsable) sí es un parámetro explícito válido.
-  10. Annotations MCP en todas las tools (readOnlyHint en lecturas, destructiveHint donde
-      corresponda).
-  11. Errores con forma uniforme y un código estable que el agente pueda interpretar. Los códigos
-      base (PARAMETRO_INVALIDO, NO_AUTORIZADO, BASE_NO_DISPONIBLE, ERROR_INTERNO) son comunes a
-      todos los MCPs; cada MCP suma los propios de su dominio en su `src/errores.ts`.
-  12. Descripción de tools (obligatoria en MCPs nuevos y en la plantilla): cuatro partes rotuladas,
-      en este orden y cada una al comienzo de una línea: "Qué hace:", "Cuándo usarla:",
-      "Parámetros:" (con al menos un ejemplo concreto, `ej.: …`; o "Parámetros: ninguno.") y
-      "Qué NO hacer:" (con la tool a usar en su lugar, si existe). La verifica el test de contrato
-      de cada MCP con `problemasDeDescripcion` de `@mcp-jkmate/core/pruebas`. Las tools de
-      tickets quedan exceptuadas hasta un change que reescriba sus descripciones y vuelva a medir.
-
-  ## Convenciones generales
-  Metodología SDD, plantillas y flujo de specs: hub JKMate-Knowledge `procesos/flujo-specs.md`.
-  Reglas de seguridad de agentes (confirmación antes de efectos reales, secretos): skill
+  Flujo SDD: hub JKMate-Knowledge `procesos/flujo-specs.md`. Seguridad de agentes: skill
   `convenciones-jkmate:agent-safety-conventions`.
 
 rules:
