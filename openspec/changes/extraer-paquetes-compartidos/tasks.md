@@ -53,8 +53,10 @@
 
 ## 8. Documentación y configuración del repo
 
-- [ ] 8.1 Escribir el `README.md` raíz: qué es el monorepo, la tabla de apps y paquetes, los comandos raíz y cómo crear un MCP (con un link al README de la plantilla). Actualizar en el README y en `docs/instalacion.md` de tickets las rutas (`apps/tickets-mcp/dist/index.js`), el `.env` dentro de la app y los comandos con `-w`. Se verifica revisando que ningún documento siga apuntando a `dist/index.js` en la raíz (`grep`).
-- [ ] 8.2 Actualizar `openspec/config.yaml`: el propósito pasa a ser el monorepo de MCPs v2 para agentes, la decisión del 2026-10-15 se reemplaza por la del 2026-10-21 (monorepo propio, separado de `jkmate-mcp`), `db/procedimientos/` pasa a ser `apps/<mcp>/db/procedimientos/` y se agrega la regla de la plantilla de descripción para MCPs nuevos. Se verifica con `openspec validate --specs` en verde y revisión del usuario.
+- [x] 8.1 Escribir el `README.md` raíz: qué es el monorepo, la tabla de apps y paquetes, los comandos raíz y cómo crear un MCP (con un link al README de la plantilla). Actualizar en el README y en `docs/instalacion.md` de tickets las rutas (`apps/tickets-mcp/dist/index.js`), el `.env` dentro de la app y los comandos con `-w`. Se verifica revisando que ningún documento siga apuntando a `dist/index.js` en la raíz (`grep`).
+  - `grep` sin rutas a `dist/index.js` en la raíz: solo quedan las relativas a cada app (`start` en `package.json`) y el aviso de la ruta anterior en el README de tickets. `docs/instalacion.md` suma la nota de migración y el error de paquetes sin compilar.
+- [x] 8.2 Actualizar `openspec/config.yaml`: el propósito pasa a ser el monorepo de MCPs v2 para agentes, la decisión del 2026-10-15 se reemplaza por la del 2026-10-21 (monorepo propio, separado de `jkmate-mcp`), `db/procedimientos/` pasa a ser `apps/<mcp>/db/procedimientos/` y se agrega la regla de la plantilla de descripción para MCPs nuevos. Se verifica con `openspec validate --specs` en verde y revisión del usuario.
+  - `openspec validate --specs`: 6 en verde. **Falta la revisión del usuario** del texto de `openspec/config.yaml`.
 - [ ] 8.3 Mover el `.env` local a `apps/tickets-mcp/.env` y actualizar la ruta en `claude_desktop_config.json` (avisar al usuario: son archivos de su máquina, no del repo). Se verifica arrancando el MCP desde Claude Desktop y viendo las 4 tools.
 
 ## 9. Verificación de integración

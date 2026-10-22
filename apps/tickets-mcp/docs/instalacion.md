@@ -13,14 +13,16 @@ El servidor corre en tu máquina: Claude Desktop lo lanza como proceso local y s
 
 ## 1. Compilar
 
-Desde la carpeta del proyecto:
+Desde la raíz del repo (no desde `apps\tickets-mcp`):
 
 ```bash
 npm install
 npm run build
 ```
 
-Esto genera `dist\index.js`, que es lo que ejecuta Claude Desktop. Después de cada cambio en el código hay que volver a correr `npm run build`.
+Esto compila los paquetes compartidos y genera `apps\tickets-mcp\dist\index.js`, que es lo que ejecuta Claude Desktop. Después de cada cambio en el código hay que volver a correr `npm run build`.
+
+> **Si ya lo tenías instalado antes del monorepo:** la ruta cambió de `...\mcpTicketsJson\dist\index.js` a `...\mcpTicketsJson\apps\tickets-mcp\dist\index.js`. Actualizala en `claude_desktop_config.json` (paso 2) y, si usás un `.env` para correrlo desde la terminal, movelo a `apps\tickets-mcp\.env`.
 
 ## 2. Configurar Claude Desktop
 
@@ -37,7 +39,7 @@ Agregá el servidor dentro de `mcpServers`. Si el archivo ya tiene otros servido
   "mcpServers": {
     "tickets-v2": {
       "command": "node",
-      "args": ["D:\\Desarrollo\\_Repos\\mcpTicketsJson\\dist\\index.js"],
+      "args": ["D:\\Desarrollo\\_Repos\\mcpTicketsJson\\apps\\tickets-mcp\\dist\\index.js"],
       "env": {
         "MCP_COD_USUARIO": "15169",
         "FIREBIRD_HOST": "127.0.0.1",
@@ -106,7 +108,8 @@ El servidor deja su log en:
 | Síntoma o mensaje en el log | Causa | Solución |
 |---|---|---|
 | `Configuración inválida: MCP_COD_USUARIO ...` o `... FIREBIRD_DATABASE ...` | Falta una variable obligatoria o tiene un valor inválido. | Revisá el bloque `env` de la configuración. |
-| `Cannot find module ...dist\index.js` | La ruta de `args` es incorrecta o no compilaste el proyecto. | Corregí la ruta y corré `npm run build`. |
+| `Cannot find module ...dist\index.js` | La ruta de `args` es incorrecta (por ejemplo, la anterior al monorepo, sin `apps\tickets-mcp`) o no compilaste el proyecto. | Corregí la ruta y corré `npm run build` en la raíz del repo. |
+| `Cannot find module ...@mcp-jkmate\core\dist\index.js` | Los paquetes compartidos no están compilados. | Corré `npm run build` en la raíz del repo, no dentro de `apps\tickets-mcp`. |
 | Las tools responden `BASE_NO_DISPONIBLE` | No se puede conectar a Firebird. | Verificá que el servicio de Firebird esté levantado y revisá host, puerto, ruta, usuario y contraseña. |
 | Las tools responden `ERROR_INTERNO` | Error inesperado, por ejemplo que la base no tenga los SP `_AG`. | El detalle queda en el log del servidor. |
 | `"yo" no aplica: el usuario de la sesión no tiene un desarrollador asociado` | Tu usuario no tiene `USUARIOS.COD_DESARROLLADOR`. | En `listar_tareas`, indicá el código de desarrollador o filtrá por `ticketId`. |
@@ -117,7 +120,7 @@ El servidor deja su log en:
 Para revisar el servidor con una interfaz:
 
 ```bash
-npx @modelcontextprotocol/inspector node dist/index.js
+npx @modelcontextprotocol/inspector node apps/tickets-mcp/dist/index.js
 ```
 
 Cargá las mismas variables de entorno en la pantalla del inspector, conectá y probá las tools desde ahí.

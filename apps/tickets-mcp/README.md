@@ -9,7 +9,9 @@ MCP de tickets de JKMate, versión 2. Reemplaza de a poco a `tickets-jkmate-mcp`
 | `listar_tareas` | Tareas de desarrollo por desarrollador, responsable, ticket o estado. |
 | `resumir_tickets` | Conteos por estado, prioridad, sistema, cliente o asignado, calculados en la base. |
 
-La especificación y las decisiones de diseño están en [`openspec/changes/agregar-tools-lectura-tickets/`](openspec/changes/agregar-tools-lectura-tickets/).
+Es una de las apps del monorepo ([README raíz](../../README.md)): usa `@mcp-jkmate/core` y `@mcp-jkmate/firebird`. La especificación está en [`openspec/specs/`](../../openspec/specs/) y el diseño original en [`openspec/changes/archive/2026-10-17-agregar-tools-lectura-tickets/`](../../openspec/changes/archive/2026-10-17-agregar-tools-lectura-tickets/).
+
+Todos los comandos de este README se corren en la **raíz del repo**. Los de esta app llevan `-w apps/tickets-mcp`.
 
 ## Requisitos
 
@@ -20,7 +22,7 @@ La especificación y las decisiones de diseño están en [`openspec/changes/agre
 
 El servidor es local y habla MCP por **stdio**: Claude Desktop lo lanza como proceso hijo. No hay URL, puerto ni OAuth. La guía completa, con verificación y solución de problemas, está en [docs/instalacion.md](docs/instalacion.md).
 
-1. Compilá una vez:
+1. Compilá una vez, en la raíz del repo (compila también los paquetes compartidos):
 
    ```bash
    npm install
@@ -34,11 +36,11 @@ El servidor es local y habla MCP por **stdio**: Claude Desktop lo lanza como pro
      "mcpServers": {
        "tickets-v2": {
          "command": "node",
-         "args": ["D:\Desarrollo\_Repos\mcpTicketsJson\dist\index.js"],
+         "args": ["D:\\Desarrollo\\_Repos\\mcpTicketsJson\\apps\\tickets-mcp\\dist\\index.js"],
          "env": {
            "MCP_COD_USUARIO": "15169",
            "FIREBIRD_HOST": "127.0.0.1",
-           "FIREBIRD_DATABASE": "E:\Bases\CREAR_JK3_20261016.fdb",
+           "FIREBIRD_DATABASE": "E:\\Bases\\CREAR_JK3_20261016.fdb",
            "FIREBIRD_USER": "SYSDBA",
            "FIREBIRD_PASSWORD": "<password>"
          }
@@ -46,6 +48,8 @@ El servidor es local y habla MCP por **stdio**: Claude Desktop lo lanza como pro
      }
    }
    ```
+
+   Si lo tenías instalado antes del monorepo, la ruta cambió: antes era `...\mcpTicketsJson\dist\index.js`.
 
 3. Reiniciá Claude Desktop. Las 4 tools aparecen bajo `tickets-v2`. Si no arranca, el motivo queda en el log del servidor (`%APPDATA%\Claude\logs\mcp-server-tickets-v2.log`).
 
@@ -68,32 +72,32 @@ Esto es para evaluación: no hay autenticación. Quien configura el proceso deci
 
 ## Desde la terminal
 
-Para correrlo a mano, copiá `.env.example` a `.env` y completalo:
+Para correrlo a mano, copiá `apps/tickets-mcp/.env.example` a `apps/tickets-mcp/.env` y completalo. El `.env` va dentro de la app: los scripts corren con la carpeta de la app como directorio de trabajo.
 
 ```bash
-npm run dev     # corre src/ con tsx (lee .env)
-npm start       # corre dist/ (lee .env)
+npm run dev -w apps/tickets-mcp     # corre src/ con tsx (lee .env)
+npm start -w apps/tickets-mcp       # corre dist/ (lee .env)
 ```
 
-Queda esperando mensajes MCP por stdin. Para explorarlo con una interfaz: `npx @modelcontextprotocol/inspector node dist/index.js` (las variables se cargan en la pantalla del inspector).
+Queda esperando mensajes MCP por stdin. Para explorarlo con una interfaz: `npx @modelcontextprotocol/inspector node apps/tickets-mcp/dist/index.js` (las variables se cargan en la pantalla del inspector).
 
 ## Tests
 
 ```bash
-npm test                  # unitarios y de contrato; no necesitan base
-npm run test:integracion  # contra Firebird (incluye una sesión stdio real); usa FIREBIRD_* del .env y se saltea si no están
-npm run lint
-npm run typecheck
+npm test -w apps/tickets-mcp                  # unitarios y de contrato; no necesitan base
+npm run test:integracion -w apps/tickets-mcp  # contra Firebird (incluye una sesión stdio real); usa FIREBIRD_* del .env y se saltea si no están
+npm run lint -w apps/tickets-mcp
+npm run typecheck -w apps/tickets-mcp
 ```
 
-Los tests de integración que usan los SP `_AG` se saltean solos mientras esos SP no existan en la base.
+Los tests de integración que usan los SP `_AG` se saltean solos mientras esos SP no existan en la base. `test/contrato.test.ts` compara `tools/list` con `test/datos/tools-list.json`: si un cambio modifica el contrato publicado, tiene que actualizar ese archivo a propósito.
 
 ## Medición v1 contra v2
 
 `medicion/tickets.json` define el conjunto fijo (debe incluir el #74836): tickets para comparar el contexto completo y casos de listado con los argumentos de cada versión. Con `MEDICION_URL_V1` y `MEDICION_TOKEN_V1` (la v1 es remota) y las variables de la v2 en el `.env`:
 
 ```bash
-npm run medir
+npm run medir -w apps/tickets-mcp
 ```
 
 La v2 se lanza sola por stdio desde `dist/`.
@@ -118,17 +122,17 @@ Antes de la primera llamada al modelo, el arnés comprueba la conexión a la v1 
 
 ```bash
 # Corrida de prueba: 1 repetición (10 corridas), corta a los US$ 5
-npm run medir:agente -- --repeticiones 1 --tope-usd 5
+npm run medir:agente -w apps/tickets-mcp -- --repeticiones 1 --tope-usd 5
 
 # Corrida completa: 5 repeticiones por caso y versión (50 corridas)
-npm run medir:agente -- --tope-usd 30
+npm run medir:agente -w apps/tickets-mcp -- --tope-usd 30
 
 # Subconjunto de casos o versiones
-npm run medir:agente -- --casos estado-ticket,crear-tarea --versiones v2
+npm run medir:agente -w apps/tickets-mcp -- --casos estado-ticket,crear-tarea --versiones v2
 
 # Regenerar el reporte sin volver a llamar al modelo (por ejemplo, después de cambiar precios.json)
-npm run medir:agente -- --solo-reporte                     # el último registro
-npm run medir:agente -- --solo-reporte medicion/agente/corridas/2026-10-20-1200.jsonl
+npm run medir:agente -w apps/tickets-mcp -- --solo-reporte                     # el último registro
+npm run medir:agente -w apps/tickets-mcp -- --solo-reporte medicion/agente/corridas/2026-10-20-1200.jsonl
 ```
 
 **Costo estimado:** entre US$ 5 y 25 para la corrida completa de 50 corridas. Primero hay que hacer la corrida de prueba para conocer el costo real por corrida. `--tope-usd` corta la ejecución antes del siguiente request cuando el costo acumulado llega al tope. Los precios (USD por millón de tokens) están en `medicion/agente/precios.json`.
@@ -150,9 +154,9 @@ El encabezado informa el modelo, el effort y el tamaño de las tools de cada ver
 Sirve mientras no haya credenciales de la API de Anthropic. Da un aproximado de tokens y costo **sin llamar al modelo**: simula una conversación fija por caso y versión (`medicion/agente/guiones.json`) con las definiciones de tools y las respuestas reales de los dos servidores. Las escrituras se interceptan igual que en la medición con agente. Necesita la v1 y la v2 (mismos requisitos de arriba, salvo la API key).
 
 ```bash
-npm run estimar:agente                          # los 5 casos con v1 y v2
-npm run estimar:agente -- --razon 3.2           # otra razón de caracteres por token
-npm run estimar:agente -- --casos estado-ticket --versiones v2
+npm run estimar:agente -w apps/tickets-mcp     # los 5 casos con v1 y v2
+npm run estimar:agente -w apps/tickets-mcp -- --razon 3.2           # otra razón de caracteres por token
+npm run estimar:agente -w apps/tickets-mcp -- --casos estado-ticket --versiones v2
 ```
 
 El reporte queda en `medicion/agente/estimaciones/AAAA-MM-DD-HHmm.{json,md}`, con dos escenarios: **sesión caliente** (tools y sistema ya en caché, el principal) y **sin caché** (cota superior). Los supuestos (razón de caracteres por token, thinking por turno, respuesta final y prompt de tool use) están en `medicion/agente/estimacion.json` y se declaran en el reporte, que incluye además un rango con razones de 3 y 4. No mide el thinking real, los reintentos ni la tasa de éxito.
@@ -206,13 +210,14 @@ Acepta los mismos filtros que `listar_tickets` y `agruparPor` (`estado`, `priori
 ```
 src/
   index.ts              arranque: config, logger, base, sesión y transporte stdio
-  servidor-mcp.ts       Server de bajo nivel del SDK: tools/list y tools/call
-  auth/sesion.ts        identidad del proceso (MCP_COD_USUARIO)
-  db/firebird.ts        pool, transacción de solo lectura y errores de conexión
+  servidor.ts           nombre, versión y códigos de error del servidor (sobre crearServidorMcp de core)
+  sesion.ts             SesionTickets: identidad del proceso (MCP_COD_USUARIO) y su desarrollador
+  errores.ts            CODIGOS_ERROR de tickets y su ErrorTool
   db/sp.ts              wrappers tipados de los SP públicos _AG
-  mapeo/                fechas con offset, booleanos, personas, HTML a texto
+  db/usuarios.ts        desarrollador del usuario (consulta fija, se resuelve al arrancar)
   tools/                una definición por tool, más esquemas y filtros compartidos
-  errores.ts            ErrorTool y códigos estables
-  logger.ts             Pino a stderr (+ Seq)
-test/                   apoyo, datos simulados, contrato e integración
+test/                   apoyo, datos simulados, snapshot de tools/list, contrato e integración
+scripts/                medición v1 contra v2 y arnés de agente
 ```
+
+El wrapper de tools, los errores uniformes, el logger y el servidor MCP están en [`packages/core`](../../packages/core/); el pool de Firebird, el contrato `RESULTADO`/`MENSAJE_ERROR` y la conversión de fechas y valores, en [`packages/firebird`](../../packages/firebird/).
