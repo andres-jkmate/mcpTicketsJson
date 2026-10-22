@@ -1,0 +1,2293 @@
+[
+  {
+    "name": "obtener_contexto_ticket",
+    "title": "Contexto completo de un ticket",
+    "description": "Devuelve en una sola llamada todo el contexto de un ticket de JKMate: detalle, historial compacto (mensajes e hitos de sistema, del más viejo al más nuevo), tareas de desarrollo, agendas, presupuestos y lista de adjuntos (solo metadatos y URL). Usala para entender un ticket antes de responder o trabajar en él; no hace falta llamar a otras tools para lo mismo.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "ticketId": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Número de ticket"
+        },
+        "soloVisibleCliente": {
+          "type": "boolean",
+          "default": false,
+          "description": "true = oculta del historial las notas internas que el cliente no ve"
+        },
+        "limiteHistorial": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "default": 50,
+          "description": "Cantidad máxima de movimientos; si hay más, se devuelven los más recientes"
+        }
+      },
+      "required": [
+        "ticketId"
+      ],
+      "additionalProperties": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ticket": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "titulo": {
+              "type": "string"
+            },
+            "estado": {
+              "$ref": "#/$defs/estadoTicket"
+            },
+            "resultado": {
+              "type": "string",
+              "description": "Subestado actual (resultado del último movimiento)"
+            },
+            "prioridad": {
+              "$ref": "#/$defs/prioridadTicket"
+            },
+            "sistema": {
+              "$ref": "#/$defs/sistema"
+            },
+            "proceso": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/refNombre"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "cliente": {
+              "$ref": "#/$defs/refNombre"
+            },
+            "contacto": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "asignadoA": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creadoEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "actualizadoEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "pedidoNormalizado": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "titulo",
+            "estado",
+            "resultado",
+            "prioridad",
+            "sistema",
+            "proceso",
+            "cliente",
+            "contacto",
+            "asignadoA",
+            "creadoEn",
+            "actualizadoEn",
+            "pedidoNormalizado"
+          ]
+        },
+        "totalHistorial": {
+          "type": "integer"
+        },
+        "historial": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "fecha": {
+                "$ref": "#/$defs/fechaHora"
+              },
+              "tipo": {
+                "enum": [
+                  "MENSAJE",
+                  "ASIGNACION",
+                  "CAMBIO_ESTADO",
+                  "CAMBIO_PRIORIDAD",
+                  "CAMBIO_TIPO_SISTEMA"
+                ]
+              },
+              "autor": {
+                "$ref": "#/$defs/persona"
+              },
+              "destinatario": {
+                "$ref": "#/$defs/persona"
+              },
+              "evento": {
+                "type": "string",
+                "description": "Qué hizo el sistema. Solo si tipo != MENSAJE"
+              },
+              "texto": {
+                "type": "string",
+                "description": "Texto del mensaje, sin HTML"
+              },
+              "resultado": {
+                "type": "string",
+                "description": "Solo en el primer movimiento y cuando cambia respecto del anterior"
+              },
+              "esDelCliente": {
+                "type": "boolean"
+              },
+              "visibleCliente": {
+                "type": "boolean"
+              },
+              "adjuntos": {
+                "type": "integer"
+              },
+              "respondeA": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "fecha",
+              "tipo",
+              "autor",
+              "texto",
+              "esDelCliente",
+              "visibleCliente",
+              "adjuntos"
+            ]
+          }
+        },
+        "tareas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tarea"
+          }
+        },
+        "agendas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "inicio": {
+                "$ref": "#/$defs/fechaHora"
+              },
+              "fin": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/fechaHora"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "todoElDia": {
+                "type": "boolean"
+              },
+              "realizada": {
+                "type": "boolean"
+              },
+              "usuario": {
+                "$ref": "#/$defs/persona"
+              }
+            },
+            "required": [
+              "id",
+              "inicio",
+              "fin",
+              "todoElDia",
+              "realizada",
+              "usuario"
+            ]
+          }
+        },
+        "presupuestos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "comprobante": {
+                "type": "string"
+              },
+              "fecha": {
+                "$ref": "#/$defs/fecha"
+              },
+              "estado": {
+                "$ref": "#/$defs/estadoPresupuesto"
+              },
+              "importe": {
+                "type": "number"
+              },
+              "aprobadoEn": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/fechaHora"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "comprobante",
+              "fecha",
+              "estado",
+              "importe",
+              "aprobadoEn"
+            ]
+          }
+        },
+        "adjuntos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "nombre": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "mensajeId": {
+                "type": "integer"
+              },
+              "fecha": {
+                "$ref": "#/$defs/fecha"
+              }
+            },
+            "required": [
+              "id",
+              "nombre",
+              "url",
+              "mensajeId",
+              "fecha"
+            ]
+          }
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "codigo": {
+              "enum": [
+                "PARAMETRO_INVALIDO",
+                "TICKET_NO_ENCONTRADO",
+                "NO_AUTORIZADO",
+                "BASE_NO_DISPONIBLE",
+                "ERROR_INTERNO"
+              ]
+            },
+            "mensaje": {
+              "type": "string"
+            },
+            "detalle": {}
+          },
+          "required": [
+            "codigo",
+            "mensaje"
+          ]
+        }
+      },
+      "$defs": {
+        "persona": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "refNombre": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "fechaHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date"
+        },
+        "estadoTicket": {
+          "enum": [
+            "INICIADO",
+            "INICIADO Y EN TRÁMITE",
+            "EN TRÁMITE",
+            "AGENDADO",
+            "A PRESUPUESTAR",
+            "PENDIENTE",
+            "PRESUPUESTO APROBADO",
+            "FINALIZADO",
+            "CANCELADO"
+          ]
+        },
+        "prioridadTicket": {
+          "enum": [
+            "SIN ASIGNAR",
+            "BAJA",
+            "MEDIA",
+            "ALTA",
+            "URGENTE",
+            "CRITICA"
+          ]
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM",
+            null
+          ]
+        },
+        "estadoTarea": {
+          "enum": [
+            "POR INICIAR",
+            "INICIADA",
+            "REABIERTO",
+            "FINALIZA DESARROLLO",
+            "FINALIZADA",
+            "ARCHIVADO"
+          ]
+        },
+        "estadoPresupuesto": {
+          "enum": [
+            "PENDIENTE",
+            "APROBADO",
+            "RECHAZADO"
+          ]
+        },
+        "tarea": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            },
+            "estado": {
+              "$ref": "#/$defs/estadoTarea"
+            },
+            "prioridad": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "tipo": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/refNombre"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ticketId": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "desarrollador": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "horasEstimadas": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "fechaCompromiso": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/fecha"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creadaEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "descripcion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "nombre",
+            "estado",
+            "prioridad",
+            "tipo",
+            "ticketId",
+            "desarrollador",
+            "responsable",
+            "horasEstimadas",
+            "fechaCompromiso",
+            "creadaEn"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "ticket",
+            "totalHistorial",
+            "historial",
+            "tareas",
+            "agendas",
+            "presupuestos",
+            "adjuntos"
+          ]
+        },
+        {
+          "required": [
+            "error"
+          ]
+        }
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "listar_tickets",
+    "title": "Listar tickets",
+    "description": "Lista tickets de JKMate con filtros combinables (estados, prioridades, sistema, asignado, agendado, cliente, rango de creación y texto libre), paginado y con el total. Por defecto solo trae tickets abiertos, ordenados por última actualización. Cada elemento es liviano (sin mensajes ni pedido normalizado) e incluye la agenda más reciente y el estado del último presupuesto. Para el detalle de un ticket usá obtener_contexto_ticket; para conteos, resumir_tickets.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "estados": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/estadoTicket"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "OR entre valores. Si se indica, se ignora soloAbiertos"
+        },
+        "soloAbiertos": {
+          "type": "boolean",
+          "default": true,
+          "description": "Solo tickets en estados no finalizados (excluye FINALIZADO y CANCELADO)"
+        },
+        "prioridades": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/prioridadTicket"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM"
+          ]
+        },
+        "asignadoA": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "const": "yo"
+            }
+          ],
+          "description": "Usuario asignado (código de usuario) o \"yo\""
+        },
+        "agendadoA": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "const": "yo"
+            }
+          ],
+          "description": "Usuario con alguna agenda en el ticket (código de usuario) o \"yo\""
+        },
+        "clienteId": {
+          "type": "integer"
+        },
+        "creadoDesde": {
+          "$ref": "#/$defs/fecha",
+          "description": "AAAA-MM-DD, inclusive"
+        },
+        "creadoHasta": {
+          "$ref": "#/$defs/fecha",
+          "description": "AAAA-MM-DD, inclusive"
+        },
+        "texto": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 100,
+          "description": "Busca en título y pedido normalizado, sin distinguir mayúsculas ni acentos"
+        },
+        "buscarEnMensajes": {
+          "type": "boolean",
+          "default": false,
+          "description": "Extiende 'texto' a los mensajes del historial (más lento)"
+        },
+        "orden": {
+          "enum": [
+            "actualizacion",
+            "creacion",
+            "agenda"
+          ],
+          "default": "actualizacion",
+          "description": "'actualizacion' y 'creacion': la fecha más reciente primero. 'agenda': por fecha de proximaAgenda ascendente (la más antigua primero, incluidas las vencidas); los tickets sin agenda van al final"
+        },
+        "limite": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        },
+        "desplazamiento": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "persona": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "refNombre": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "fechaHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date"
+        },
+        "estadoTicket": {
+          "enum": [
+            "INICIADO",
+            "INICIADO Y EN TRÁMITE",
+            "EN TRÁMITE",
+            "AGENDADO",
+            "A PRESUPUESTAR",
+            "PENDIENTE",
+            "PRESUPUESTO APROBADO",
+            "FINALIZADO",
+            "CANCELADO"
+          ]
+        },
+        "prioridadTicket": {
+          "enum": [
+            "SIN ASIGNAR",
+            "BAJA",
+            "MEDIA",
+            "ALTA",
+            "URGENTE",
+            "CRITICA"
+          ]
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM",
+            null
+          ]
+        },
+        "estadoTarea": {
+          "enum": [
+            "POR INICIAR",
+            "INICIADA",
+            "REABIERTO",
+            "FINALIZA DESARROLLO",
+            "FINALIZADA",
+            "ARCHIVADO"
+          ]
+        },
+        "estadoPresupuesto": {
+          "enum": [
+            "PENDIENTE",
+            "APROBADO",
+            "RECHAZADO"
+          ]
+        },
+        "tarea": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            },
+            "estado": {
+              "$ref": "#/$defs/estadoTarea"
+            },
+            "prioridad": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "tipo": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/refNombre"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ticketId": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "desarrollador": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "horasEstimadas": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "fechaCompromiso": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/fecha"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creadaEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "descripcion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "nombre",
+            "estado",
+            "prioridad",
+            "tipo",
+            "ticketId",
+            "desarrollador",
+            "responsable",
+            "horasEstimadas",
+            "fechaCompromiso",
+            "creadaEn"
+          ]
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "limite": {
+          "type": "integer"
+        },
+        "desplazamiento": {
+          "type": "integer"
+        },
+        "hayMas": {
+          "type": "boolean"
+        },
+        "tickets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "titulo": {
+                "type": "string"
+              },
+              "estado": {
+                "$ref": "#/$defs/estadoTicket"
+              },
+              "prioridad": {
+                "$ref": "#/$defs/prioridadTicket"
+              },
+              "sistema": {
+                "$ref": "#/$defs/sistema"
+              },
+              "cliente": {
+                "$ref": "#/$defs/refNombre"
+              },
+              "asignadoA": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/persona"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "creadoEn": {
+                "$ref": "#/$defs/fechaHora"
+              },
+              "actualizadoEn": {
+                "$ref": "#/$defs/fechaHora"
+              },
+              "proximaAgenda": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "inicio": {
+                        "$ref": "#/$defs/fechaHora"
+                      },
+                      "usuario": {
+                        "$ref": "#/$defs/persona"
+                      }
+                    },
+                    "required": [
+                      "inicio",
+                      "usuario"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "presupuesto": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/estadoPresupuesto"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Estado del presupuesto más reciente; null si no tiene"
+              }
+            },
+            "required": [
+              "id",
+              "titulo",
+              "estado",
+              "prioridad",
+              "sistema",
+              "cliente",
+              "asignadoA",
+              "creadoEn",
+              "actualizadoEn",
+              "proximaAgenda",
+              "presupuesto"
+            ]
+          }
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "codigo": {
+              "enum": [
+                "PARAMETRO_INVALIDO",
+                "TICKET_NO_ENCONTRADO",
+                "NO_AUTORIZADO",
+                "BASE_NO_DISPONIBLE",
+                "ERROR_INTERNO"
+              ]
+            },
+            "mensaje": {
+              "type": "string"
+            },
+            "detalle": {}
+          },
+          "required": [
+            "codigo",
+            "mensaje"
+          ]
+        }
+      },
+      "$defs": {
+        "persona": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "refNombre": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "fechaHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date"
+        },
+        "estadoTicket": {
+          "enum": [
+            "INICIADO",
+            "INICIADO Y EN TRÁMITE",
+            "EN TRÁMITE",
+            "AGENDADO",
+            "A PRESUPUESTAR",
+            "PENDIENTE",
+            "PRESUPUESTO APROBADO",
+            "FINALIZADO",
+            "CANCELADO"
+          ]
+        },
+        "prioridadTicket": {
+          "enum": [
+            "SIN ASIGNAR",
+            "BAJA",
+            "MEDIA",
+            "ALTA",
+            "URGENTE",
+            "CRITICA"
+          ]
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM",
+            null
+          ]
+        },
+        "estadoTarea": {
+          "enum": [
+            "POR INICIAR",
+            "INICIADA",
+            "REABIERTO",
+            "FINALIZA DESARROLLO",
+            "FINALIZADA",
+            "ARCHIVADO"
+          ]
+        },
+        "estadoPresupuesto": {
+          "enum": [
+            "PENDIENTE",
+            "APROBADO",
+            "RECHAZADO"
+          ]
+        },
+        "tarea": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            },
+            "estado": {
+              "$ref": "#/$defs/estadoTarea"
+            },
+            "prioridad": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "tipo": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/refNombre"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ticketId": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "desarrollador": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "horasEstimadas": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "fechaCompromiso": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/fecha"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creadaEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "descripcion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "nombre",
+            "estado",
+            "prioridad",
+            "tipo",
+            "ticketId",
+            "desarrollador",
+            "responsable",
+            "horasEstimadas",
+            "fechaCompromiso",
+            "creadaEn"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "total",
+            "limite",
+            "desplazamiento",
+            "hayMas",
+            "tickets"
+          ]
+        },
+        {
+          "required": [
+            "error"
+          ]
+        }
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "listar_tareas",
+    "title": "Listar tareas de desarrollo",
+    "description": "Lista tareas de desarrollo (asignaciones de JK3) filtrando por desarrollador asignado, responsable, ticket, estados, prioridad y fecha de creación, paginado y con el total. Sin desarrollador, responsable ni ticket, devuelve las tareas del usuario de la sesión. Por defecto solo pendientes (excluye FINALIZADA y ARCHIVADO) y sin la descripción completa (pedila con incluirDescripcion).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "desarrollador": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "const": "yo"
+            }
+          ],
+          "description": "Desarrollador ASIGNADO (código de desarrollador) o \"yo\""
+        },
+        "responsable": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "const": "yo"
+            }
+          ],
+          "description": "Desarrollador RESPONSABLE (supervisor) o \"yo\""
+        },
+        "ticketId": {
+          "type": "integer",
+          "description": "Número de ticket"
+        },
+        "estados": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/estadoTarea"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "OR entre valores. Si se indica, se ignora soloPendientes"
+        },
+        "soloPendientes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Excluye FINALIZADA y ARCHIVADO"
+        },
+        "prioridad": {
+          "type": "integer"
+        },
+        "creadaDesde": {
+          "$ref": "#/$defs/fecha",
+          "description": "AAAA-MM-DD, inclusive"
+        },
+        "creadaHasta": {
+          "$ref": "#/$defs/fecha",
+          "description": "AAAA-MM-DD, inclusive"
+        },
+        "incluirDescansos": {
+          "type": "boolean",
+          "default": false
+        },
+        "incluirDescripcion": {
+          "type": "boolean",
+          "default": false
+        },
+        "limite": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        },
+        "desplazamiento": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "persona": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "refNombre": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "fechaHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date"
+        },
+        "estadoTicket": {
+          "enum": [
+            "INICIADO",
+            "INICIADO Y EN TRÁMITE",
+            "EN TRÁMITE",
+            "AGENDADO",
+            "A PRESUPUESTAR",
+            "PENDIENTE",
+            "PRESUPUESTO APROBADO",
+            "FINALIZADO",
+            "CANCELADO"
+          ]
+        },
+        "prioridadTicket": {
+          "enum": [
+            "SIN ASIGNAR",
+            "BAJA",
+            "MEDIA",
+            "ALTA",
+            "URGENTE",
+            "CRITICA"
+          ]
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM",
+            null
+          ]
+        },
+        "estadoTarea": {
+          "enum": [
+            "POR INICIAR",
+            "INICIADA",
+            "REABIERTO",
+            "FINALIZA DESARROLLO",
+            "FINALIZADA",
+            "ARCHIVADO"
+          ]
+        },
+        "estadoPresupuesto": {
+          "enum": [
+            "PENDIENTE",
+            "APROBADO",
+            "RECHAZADO"
+          ]
+        },
+        "tarea": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            },
+            "estado": {
+              "$ref": "#/$defs/estadoTarea"
+            },
+            "prioridad": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "tipo": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/refNombre"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ticketId": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "desarrollador": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "horasEstimadas": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "fechaCompromiso": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/fecha"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creadaEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "descripcion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "nombre",
+            "estado",
+            "prioridad",
+            "tipo",
+            "ticketId",
+            "desarrollador",
+            "responsable",
+            "horasEstimadas",
+            "fechaCompromiso",
+            "creadaEn"
+          ]
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "limite": {
+          "type": "integer"
+        },
+        "desplazamiento": {
+          "type": "integer"
+        },
+        "hayMas": {
+          "type": "boolean"
+        },
+        "tareas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tarea"
+          }
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "codigo": {
+              "enum": [
+                "PARAMETRO_INVALIDO",
+                "TICKET_NO_ENCONTRADO",
+                "NO_AUTORIZADO",
+                "BASE_NO_DISPONIBLE",
+                "ERROR_INTERNO"
+              ]
+            },
+            "mensaje": {
+              "type": "string"
+            },
+            "detalle": {}
+          },
+          "required": [
+            "codigo",
+            "mensaje"
+          ]
+        }
+      },
+      "$defs": {
+        "persona": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "refNombre": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "fechaHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date"
+        },
+        "estadoTicket": {
+          "enum": [
+            "INICIADO",
+            "INICIADO Y EN TRÁMITE",
+            "EN TRÁMITE",
+            "AGENDADO",
+            "A PRESUPUESTAR",
+            "PENDIENTE",
+            "PRESUPUESTO APROBADO",
+            "FINALIZADO",
+            "CANCELADO"
+          ]
+        },
+        "prioridadTicket": {
+          "enum": [
+            "SIN ASIGNAR",
+            "BAJA",
+            "MEDIA",
+            "ALTA",
+            "URGENTE",
+            "CRITICA"
+          ]
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM",
+            null
+          ]
+        },
+        "estadoTarea": {
+          "enum": [
+            "POR INICIAR",
+            "INICIADA",
+            "REABIERTO",
+            "FINALIZA DESARROLLO",
+            "FINALIZADA",
+            "ARCHIVADO"
+          ]
+        },
+        "estadoPresupuesto": {
+          "enum": [
+            "PENDIENTE",
+            "APROBADO",
+            "RECHAZADO"
+          ]
+        },
+        "tarea": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            },
+            "estado": {
+              "$ref": "#/$defs/estadoTarea"
+            },
+            "prioridad": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "tipo": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/refNombre"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ticketId": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "desarrollador": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "horasEstimadas": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "fechaCompromiso": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/fecha"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creadaEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "descripcion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "nombre",
+            "estado",
+            "prioridad",
+            "tipo",
+            "ticketId",
+            "desarrollador",
+            "responsable",
+            "horasEstimadas",
+            "fechaCompromiso",
+            "creadaEn"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "total",
+            "limite",
+            "desplazamiento",
+            "hayMas",
+            "tareas"
+          ]
+        },
+        {
+          "required": [
+            "error"
+          ]
+        }
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "resumir_tickets",
+    "title": "Resumir tickets",
+    "description": "Cuenta tickets de JKMate agrupados por estado, prioridad, sistema, cliente y/o asignado, con los mismos filtros que listar_tickets (por defecto solo abiertos). Los conteos se calculan en la base. En cliente y asignado devuelve los 20 con más tickets y una fila con clave null que acumula el resto (y los sin asignar). Usala para panoramas (\"¿cuántos tengo por estado?\") en lugar de listar.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "estados": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/estadoTicket"
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "OR entre valores. Si se indica, se ignora soloAbiertos"
+        },
+        "soloAbiertos": {
+          "type": "boolean",
+          "default": true,
+          "description": "Solo tickets en estados no finalizados (excluye FINALIZADO y CANCELADO)"
+        },
+        "prioridades": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/prioridadTicket"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM"
+          ]
+        },
+        "asignadoA": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "const": "yo"
+            }
+          ],
+          "description": "Usuario asignado (código de usuario) o \"yo\""
+        },
+        "agendadoA": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "const": "yo"
+            }
+          ],
+          "description": "Usuario con alguna agenda en el ticket (código de usuario) o \"yo\""
+        },
+        "clienteId": {
+          "type": "integer"
+        },
+        "creadoDesde": {
+          "$ref": "#/$defs/fecha",
+          "description": "AAAA-MM-DD, inclusive"
+        },
+        "creadoHasta": {
+          "$ref": "#/$defs/fecha",
+          "description": "AAAA-MM-DD, inclusive"
+        },
+        "texto": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 100,
+          "description": "Busca en título y pedido normalizado, sin distinguir mayúsculas ni acentos"
+        },
+        "buscarEnMensajes": {
+          "type": "boolean",
+          "default": false,
+          "description": "Extiende 'texto' a los mensajes del historial (más lento)"
+        },
+        "agruparPor": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "estado",
+              "prioridad",
+              "sistema",
+              "cliente",
+              "asignado"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true,
+          "default": [
+            "estado",
+            "prioridad",
+            "cliente"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "$defs": {
+        "persona": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "refNombre": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "fechaHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date"
+        },
+        "estadoTicket": {
+          "enum": [
+            "INICIADO",
+            "INICIADO Y EN TRÁMITE",
+            "EN TRÁMITE",
+            "AGENDADO",
+            "A PRESUPUESTAR",
+            "PENDIENTE",
+            "PRESUPUESTO APROBADO",
+            "FINALIZADO",
+            "CANCELADO"
+          ]
+        },
+        "prioridadTicket": {
+          "enum": [
+            "SIN ASIGNAR",
+            "BAJA",
+            "MEDIA",
+            "ALTA",
+            "URGENTE",
+            "CRITICA"
+          ]
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM",
+            null
+          ]
+        },
+        "estadoTarea": {
+          "enum": [
+            "POR INICIAR",
+            "INICIADA",
+            "REABIERTO",
+            "FINALIZA DESARROLLO",
+            "FINALIZADA",
+            "ARCHIVADO"
+          ]
+        },
+        "estadoPresupuesto": {
+          "enum": [
+            "PENDIENTE",
+            "APROBADO",
+            "RECHAZADO"
+          ]
+        },
+        "tarea": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            },
+            "estado": {
+              "$ref": "#/$defs/estadoTarea"
+            },
+            "prioridad": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "tipo": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/refNombre"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ticketId": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "desarrollador": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "horasEstimadas": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "fechaCompromiso": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/fecha"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creadaEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "descripcion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "nombre",
+            "estado",
+            "prioridad",
+            "tipo",
+            "ticketId",
+            "desarrollador",
+            "responsable",
+            "horasEstimadas",
+            "fechaCompromiso",
+            "creadaEn"
+          ]
+        }
+      }
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "porEstado": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "clave": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cantidad": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "clave",
+              "cantidad"
+            ]
+          }
+        },
+        "porPrioridad": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "clave": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cantidad": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "clave",
+              "cantidad"
+            ]
+          }
+        },
+        "porSistema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "clave": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cantidad": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "clave",
+              "cantidad"
+            ]
+          }
+        },
+        "porCliente": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "clave": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/refNombre"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cantidad": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "clave",
+              "cantidad"
+            ]
+          }
+        },
+        "porAsignado": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "clave": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/refNombre"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cantidad": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "clave",
+              "cantidad"
+            ]
+          }
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "codigo": {
+              "enum": [
+                "PARAMETRO_INVALIDO",
+                "TICKET_NO_ENCONTRADO",
+                "NO_AUTORIZADO",
+                "BASE_NO_DISPONIBLE",
+                "ERROR_INTERNO"
+              ]
+            },
+            "mensaje": {
+              "type": "string"
+            },
+            "detalle": {}
+          },
+          "required": [
+            "codigo",
+            "mensaje"
+          ]
+        }
+      },
+      "$defs": {
+        "persona": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "refNombre": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "nombre"
+          ]
+        },
+        "fechaHora": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date"
+        },
+        "estadoTicket": {
+          "enum": [
+            "INICIADO",
+            "INICIADO Y EN TRÁMITE",
+            "EN TRÁMITE",
+            "AGENDADO",
+            "A PRESUPUESTAR",
+            "PENDIENTE",
+            "PRESUPUESTO APROBADO",
+            "FINALIZADO",
+            "CANCELADO"
+          ]
+        },
+        "prioridadTicket": {
+          "enum": [
+            "SIN ASIGNAR",
+            "BAJA",
+            "MEDIA",
+            "ALTA",
+            "URGENTE",
+            "CRITICA"
+          ]
+        },
+        "sistema": {
+          "enum": [
+            "JK3",
+            "JK2",
+            "DESKTOP",
+            "CRM",
+            null
+          ]
+        },
+        "estadoTarea": {
+          "enum": [
+            "POR INICIAR",
+            "INICIADA",
+            "REABIERTO",
+            "FINALIZA DESARROLLO",
+            "FINALIZADA",
+            "ARCHIVADO"
+          ]
+        },
+        "estadoPresupuesto": {
+          "enum": [
+            "PENDIENTE",
+            "APROBADO",
+            "RECHAZADO"
+          ]
+        },
+        "tarea": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "nombre": {
+              "type": "string"
+            },
+            "estado": {
+              "$ref": "#/$defs/estadoTarea"
+            },
+            "prioridad": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "tipo": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/refNombre"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ticketId": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "desarrollador": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "responsable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/persona"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "horasEstimadas": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "fechaCompromiso": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/fecha"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "creadaEn": {
+              "$ref": "#/$defs/fechaHora"
+            },
+            "descripcion": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "nombre",
+            "estado",
+            "prioridad",
+            "tipo",
+            "ticketId",
+            "desarrollador",
+            "responsable",
+            "horasEstimadas",
+            "fechaCompromiso",
+            "creadaEn"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "total"
+          ]
+        },
+        {
+          "required": [
+            "error"
+          ]
+        }
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  }
+]

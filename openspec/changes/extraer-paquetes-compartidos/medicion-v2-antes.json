@@ -1,0 +1,65 @@
+{
+  "tools": 4,
+  "totales": {
+    "llamadas": 7,
+    "caracteresTexto": 58072
+  },
+  "resultados": [
+    {
+      "caso": "contexto #74836",
+      "llamadas": 1,
+      "caracteresTexto": 6866,
+      "caracteresEstructurado": 6708,
+      "esError": false,
+      "sha256": "c12c8eede653cb4982ad290100cdda82fcd1f31e84afd7d85d0820aee7649efc"
+    },
+    {
+      "caso": "contexto #74111",
+      "llamadas": 1,
+      "caracteresTexto": 14025,
+      "caracteresEstructurado": 13876,
+      "esError": false,
+      "sha256": "64208e86cc8e508df7f82299d193250a37f02330142f151aa25c37071dd1be43"
+    },
+    {
+      "caso": "contexto #74703",
+      "llamadas": 1,
+      "caracteresTexto": 17053,
+      "caracteresEstructurado": 16874,
+      "esError": false,
+      "sha256": "946ab7fc618ed70f5d7ca74a8a4a5a0440197beb75ae3ad22d43b51abc2ac378"
+    },
+    {
+      "caso": "contexto #74619",
+      "llamadas": 1,
+      "caracteresTexto": 6680,
+      "caracteresEstructurado": 6518,
+      "esError": false,
+      "sha256": "18b1cf2d70804c1f05f7b7dc2d63e90d66fea5ac242e3e716747b6a881880014"
+    },
+    {
+      "caso": "mis tickets agendados",
+      "llamadas": 1,
+      "caracteresTexto": 3571,
+      "caracteresEstructurado": 3136,
+      "esError": false,
+      "sha256": "cb5960a9f7c2c1b5010987421d188a2baa63b0bc6c8776468747b9e5869d081c"
+    },
+    {
+      "caso": "mis tickets de prioridad CRITICA",
+      "llamadas": 1,
+      "caracteresTexto": 576,
+      "caracteresEstructurado": 500,
+      "esError": false,
+      "sha256": "fbdd6f9088b6b7bb7d9aff91741d9a383c3546ff2d39af666a28a070bc9448b5"
+    },
+    {
+      "caso": "mis tareas pendientes",
+      "llamadas": 1,
+      "caracteresTexto": 9301,
+      "caracteresEstructurado": 7484,
+      "esError": false,
+      "sha256": "54105c78a4ef898ae1e7c9805d9a6fca6b1e25288e5ead07a3c9cf797e19506a"
+    }
+  ]
+}
