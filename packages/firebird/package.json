@@ -2,7 +2,7 @@
   "name": "@mcp-jkmate/firebird",
   "version": "0.1.0",
   "private": true,
-  "description": "Acceso a Firebird para los MCPs: pool de node-firebird, transacción de solo lectura, contrato RESULTADO/MENSAJE_ERROR y conversión de valores.",
+  "description": "Acceso a Firebird para los MCPs: pool de node-firebird, transacciones de lectura y de escritura, contrato RESULTADO/MENSAJE_ERROR y conversión de valores.",
   "type": "module",
   "exports": {
     ".": {

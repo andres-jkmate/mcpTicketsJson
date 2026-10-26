@@ -19,7 +19,7 @@ describe('obtener_ejemplo', () => {
     const { resultado, llamadas } = await llamar({ ejemploId: 7 });
     expect(resultado.isError).toBeFalsy();
     expect(resultado.structuredContent).toEqual({ ejemplo: { id: 7, nombre: 'Ejemplo siete', activo: true, fechaAlta: '2026-10-01' } });
-    expect(llamadas).toEqual([{ nombre: 'PROC_GET_EJEMPLO_AG', parametros: [7] }]);
+    expect(llamadas).toEqual([{ nombre: 'PROC_GET_EJEMPLO_AG', parametros: [7], escritura: false }]);
   });
 
   it('un ejemplo inexistente responde EJEMPLO_NO_ENCONTRADO', async () => {

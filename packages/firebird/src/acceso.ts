@@ -16,6 +16,12 @@ export interface AccesoDatos {
    */
   enTransaccion<T>(trabajo: (ejecutarSp: EjecutarSp) => Promise<T>, medidor?: Medidor): Promise<T>;
   /**
+   * Ejecuta `trabajo` dentro de una única transacción de escritura (READ COMMITTED, con espera):
+   * se confirma solo si `trabajo` termina bien. Ante cualquier error, incluido el del commit, se
+   * revierte y el error llega a quien llamó. Es la única forma en que un MCP escribe.
+   */
+  enTransaccionEscritura<T>(trabajo: (ejecutarSp: EjecutarSp) => Promise<T>, medidor?: Medidor): Promise<T>;
+  /**
    * Ejecuta una consulta fija fuera de los SP (por ejemplo, para resolver la sesión al arrancar).
    * USO RESTRINGIDO: `sql` tiene que ser una constante escrita en el código, nunca armada con el
    * input de una tool; los valores van siempre como `parametros`. Todo lo que viene de una tool
@@ -121,36 +127,63 @@ export function crearAccesoFirebird(config: ConfigFirebird, opcionesExtra: Opcio
     }
   }
 
-  return {
-    async enTransaccion(trabajo, medidor) {
-      return conConexion(async (db) => {
-        let tx: Firebird.Transaction;
+  /**
+   * Corre `trabajo` en una transacción con `opciones`. En lectura, un error del commit no cambia
+   * nada y se descarta; en escritura significa que no se grabó, así que se revierte y se propaga.
+   */
+  function enTransaccionCon<T>(
+    opciones: Firebird.TransactionOptions,
+    escritura: boolean,
+    trabajo: (ejecutarSp: EjecutarSp) => Promise<T>,
+    medidor?: Medidor,
+  ): Promise<T> {
+    return conConexion(async (db) => {
+      let tx: Firebird.Transaction;
+      try {
+        tx = await db.transactionAsync(opciones);
+      } catch (error) {
+        throw traducir(error);
+      }
+      const ejecutarSp: EjecutarSp = async (nombre, parametros) => {
+        if (!NOMBRE_SP.test(nombre)) throw new Error(`Nombre de SP inválido: ${nombre}`);
+        if (medidor) medidor.llamadasBase += 1;
+        const marcadores = parametros.map(() => '?').join(', ');
+        const sql = `SELECT * FROM ${nombre}${parametros.length ? `(${marcadores})` : ''}`;
         try {
-          tx = await db.transactionAsync({ isolation: Firebird.ISOLATION_REPEATABLE_READ, readOnly: true, wait: false });
+          const filas = await tx.queryAsync<Fila>(sql, parametros);
+          return filas.map(normalizarFila);
         } catch (error) {
           throw traducir(error);
         }
-        const ejecutarSp: EjecutarSp = async (nombre, parametros) => {
-          if (!NOMBRE_SP.test(nombre)) throw new Error(`Nombre de SP inválido: ${nombre}`);
-          if (medidor) medidor.llamadasBase += 1;
-          const marcadores = parametros.map(() => '?').join(', ');
-          const sql = `SELECT * FROM ${nombre}${parametros.length ? `(${marcadores})` : ''}`;
-          try {
-            const filas = await tx.queryAsync<Fila>(sql, parametros);
-            return filas.map(normalizarFila);
-          } catch (error) {
-            throw traducir(error);
-          }
-        };
-        try {
-          const resultado = await trabajo(ejecutarSp);
-          await tx.commitAsync().catch(() => undefined);
-          return resultado;
-        } catch (error) {
-          await tx.rollbackAsync().catch(() => undefined);
-          throw error;
-        }
-      });
+      };
+      let resultado: T;
+      try {
+        resultado = await trabajo(ejecutarSp);
+      } catch (error) {
+        await tx.rollbackAsync().catch(() => undefined);
+        throw error;
+      }
+      if (!escritura) {
+        await tx.commitAsync().catch(() => undefined);
+        return resultado;
+      }
+      try {
+        await tx.commitAsync();
+      } catch (error) {
+        await tx.rollbackAsync().catch(() => undefined);
+        throw traducir(error);
+      }
+      return resultado;
+    });
+  }
+
+  return {
+    async enTransaccion(trabajo, medidor) {
+      return enTransaccionCon({ isolation: Firebird.ISOLATION_REPEATABLE_READ, readOnly: true, wait: false }, false, trabajo, medidor);
+    },
+
+    async enTransaccionEscritura(trabajo, medidor) {
+      return enTransaccionCon({ isolation: Firebird.ISOLATION_READ_COMMITTED, readOnly: false, wait: true }, true, trabajo, medidor);
     },
 
     async consultar<T extends Fila = Fila>(sql: string, parametros: ValorParametro[]) {

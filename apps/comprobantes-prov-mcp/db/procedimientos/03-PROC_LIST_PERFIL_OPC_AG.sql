@@ -1,0 +1,49 @@
+SET TERM ^ ;
+
+CREATE OR ALTER PROCEDURE PROC_LIST_PERFIL_OPC_AG (
+  P_COD_USUARIO INTEGER,
+  P_COD_PERFIL  INTEGER
+)
+RETURNS (
+  RESULTADO     SMALLINT,
+  MENSAJE_ERROR VARCHAR(500),
+  CAMPO         VARCHAR(20),
+  CODIGO        INTEGER,
+  DESCRIPCION   VARCHAR(100),
+  POR_DEFECTO   SMALLINT,
+  LETRA         CHAR(1),
+  MODALIDAD     VARCHAR(17),
+  COD_EMPRESA   INTEGER
+)
+AS
+BEGIN
+/*
+  Nombre: PROC_LIST_PERFIL_OPC_AG
+  Descripción: Perfiles de facturación de compras del usuario y opciones del perfil elegido, para
+               preparar_factura_proveedor (expone PRV_LIST_PERFIL_OPC_AG). Sin perfiles responde
+               NO_AUTORIZADO.
+  Última modificación: 2026-10-24
+*/
+  RESULTADO = 0;
+  IF (:P_COD_USUARIO IS NULL) THEN
+  BEGIN
+    MENSAJE_ERROR = 'Falta el usuario';
+    SUSPEND; EXIT;
+  END
+  IF (NOT EXISTS (SELECT 1 FROM PERFILES_FC_COMPRA_USUARIOS WHERE COD_USUARIO = :P_COD_USUARIO)) THEN
+  BEGIN
+    MENSAJE_ERROR = 'NO_AUTORIZADO: el usuario no tiene perfiles de facturación de compras asignados';
+    SUSPEND; EXIT;
+  END
+
+  FOR SELECT CAMPO, CODIGO, DESCRIPCION, POR_DEFECTO, LETRA, MODALIDAD, COD_EMPRESA
+      FROM PRV_LIST_PERFIL_OPC_AG(:P_COD_USUARIO, :P_COD_PERFIL)
+      INTO :CAMPO, :CODIGO, :DESCRIPCION, :POR_DEFECTO, :LETRA, :MODALIDAD, :COD_EMPRESA
+  DO
+  BEGIN
+    RESULTADO = 1; MENSAJE_ERROR = '';
+    SUSPEND;
+  END
+END^
+
+SET TERM ; ^

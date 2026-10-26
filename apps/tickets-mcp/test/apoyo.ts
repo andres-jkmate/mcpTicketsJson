@@ -36,6 +36,9 @@ export function accesoSimulado(manejadores: Record<string, ManejadorSp>, codDesa
         return manejador(parametros).map((f) => ('RESULTADO' in f ? f : { RESULTADO: 1, MENSAJE_ERROR: '', ...f }));
       });
     },
+    async enTransaccionEscritura() {
+      throw new Error('tickets no escribe en la base');
+    },
     async consultar<T>(): Promise<T[]> {
       // La única consulta fija de tickets es la del desarrollador del usuario (db/usuarios.ts).
       return [{ COD_DESARROLLADOR: codDesarrollador }] as T[];

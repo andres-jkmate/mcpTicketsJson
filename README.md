@@ -9,6 +9,7 @@ Es un repo propio, separado del monorepo Nx `jkmate-mcp`. Usa npm workspaces, si
 | Carpeta | Paquete | Qué es |
 |---|---|---|
 | [`apps/tickets-mcp`](apps/tickets-mcp/README.md) | `@mcp-jkmate/tickets-mcp` | MCP de tickets: 4 tools de lectura (contexto de un ticket, listados de tickets y tareas, resúmenes). Instalación en [`docs/instalacion.md`](apps/tickets-mcp/docs/instalacion.md). |
+| [`apps/comprobantes-prov-mcp`](apps/comprobantes-prov-mcp/README.md) | `@mcp-jkmate/comprobantes-prov-mcp` | MCP de comprobantes de proveedores. Todavía sin tools: se diseñan en un change aparte. |
 | [`apps/_template-mcp`](apps/_template-mcp/README.md) | `@mcp-jkmate/template-mcp` | Plantilla para crear un MCP nuevo. Compila y se testea con el resto, pero no se instala. |
 | [`packages/core`](packages/core/) | `@mcp-jkmate/core` | Contrato de una tool, wrapper común (validación del input, errores uniformes y log de cada invocación con `idCorrelacion`), servidor MCP, logger Pino con Seq, `Sesion` y validación de la plantilla de descripción. `@mcp-jkmate/core/pruebas` tiene los helpers para los tests de cada app. |
 | [`packages/firebird`](packages/firebird/) | `@mcp-jkmate/firebird` | Pool de `node-firebird`, transacción de solo lectura, errores de conexión (`BASE_NO_DISPONIBLE`), contrato `RESULTADO`/`MENSAJE_ERROR` y conversión de fechas y valores. |

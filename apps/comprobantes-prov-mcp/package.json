@@ -1,0 +1,27 @@
+{
+  "name": "@mcp-jkmate/comprobantes-prov-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP de comprobantes de proveedores de JKMate para agentes (stdio).",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "prebuild": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "tsc -b tsconfig.build.json",
+    "dev": "tsx --conditions=@mcp-jkmate/source --env-file-if-exists=.env src/index.ts",
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mcp-jkmate/core": "*",
+    "@mcp-jkmate/firebird": "*",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7"
+  }
+}

@@ -22,6 +22,24 @@ describe('contrato RESULTADO/MENSAJE_ERROR', () => {
     }
   });
 
+  it('prefijo de un código del dominio declarado → ErrorTool con ese código, sin el prefijo', () => {
+    try {
+      aplicarContrato('PROC_X', [{ RESULTADO: 0, MENSAJE_ERROR: 'COMPROBANTE_DUPLICADO: ya se cargó' }], ['COMPROBANTE_DUPLICADO']);
+      expect.unreachable();
+    } catch (e) {
+      expect(e).toBeInstanceOf(ErrorTool);
+      expect(e).toMatchObject({ codigo: 'COMPROBANTE_DUPLICADO', message: 'ya se cargó' });
+    }
+  });
+
+  it('prefijo de un código no declarado → PARAMETRO_INVALIDO con el mensaje completo', () => {
+    const fila = { RESULTADO: 0, MENSAJE_ERROR: 'PERIODO_CERRADO: período cerrado' };
+    expect(() => aplicarContrato('PROC_X', [fila], ['COMPROBANTE_DUPLICADO'])).toThrowError(
+      expect.objectContaining({ codigo: 'PARAMETRO_INVALIDO', message: 'PERIODO_CERRADO: período cerrado' }),
+    );
+    expect(() => aplicarContrato('PROC_X', [fila])).toThrowError(expect.objectContaining({ codigo: 'PARAMETRO_INVALIDO' }));
+  });
+
   it('filas con RESULTADO = 1 se devuelven sin RESULTADO ni MENSAJE_ERROR', () => {
     expect(aplicarContrato('PROC_X', [{ RESULTADO: 1, MENSAJE_ERROR: '', A: 1 }, { RESULTADO: 1, MENSAJE_ERROR: '', A: 2 }])).toEqual([
       { A: 1 },

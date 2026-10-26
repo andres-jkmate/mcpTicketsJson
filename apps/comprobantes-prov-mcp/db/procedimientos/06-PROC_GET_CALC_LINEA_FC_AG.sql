@@ -1,0 +1,50 @@
+SET TERM ^ ;
+
+CREATE OR ALTER PROCEDURE PROC_GET_CALC_LINEA_FC_AG (
+  P_COD_ARTICULO  VARCHAR(50),
+  P_MONTO         NUMERIC(18,3),
+  P_COD_PROVEEDOR INTEGER,
+  P_FECHA         DATE
+)
+RETURNS (
+  RESULTADO       SMALLINT,
+  MENSAJE_ERROR   VARCHAR(500),
+  NETO            NUMERIC(18,3),
+  NO_GRAVADO      NUMERIC(18,3),
+  EXENTO          NUMERIC(18,3),
+  IVA             NUMERIC(18,3),
+  IMPUESTO        NUMERIC(18,3),
+  PERCEPCIONES    NUMERIC(18,3),
+  PRECIO_UNITARIO NUMERIC(18,3)
+)
+AS
+BEGIN
+/*
+  Nombre: PROC_GET_CALC_LINEA_FC_AG
+  Descripción: Importes de una línea de factura de proveedor a partir del monto con impuestos, para
+               la vista previa de preparar_factura_proveedor. Envuelve JKMT_TOTAL_IMPORTE_ART_PROV
+               (el mismo cálculo que usa PROC_INS_DET_FAC_PROV_AG al grabar). PERCEPCIONES = percepción
+               de IVA + percepción de impuestos.
+  Última modificación: 2026-10-24
+*/
+  RESULTADO = 0;
+  IF (:P_MONTO IS NULL OR :P_MONTO <= 0) THEN
+  BEGIN
+    MENSAJE_ERROR = 'El monto debe ser mayor a 0';
+    SUSPEND; EXIT;
+  END
+  IF (NOT EXISTS (SELECT 1 FROM ARTICULOS WHERE COD_ARTICULO = :P_COD_ARTICULO)) THEN
+  BEGIN
+    MENSAJE_ERROR = 'No existe el artículo ' || COALESCE(:P_COD_ARTICULO, '');
+    SUSPEND; EXIT;
+  END
+
+  SELECT NETO_TOTAL, NO_GRAVADO, EXENTO, IVA, IMPUESTO, COALESCE(PERCEP_IVA, 0) + COALESCE(PERCEP_IMPUESTO, 0), PRECIO_UNITARIO
+  FROM JKMT_TOTAL_IMPORTE_ART_PROV(:P_COD_ARTICULO, :P_MONTO, :P_COD_PROVEEDOR, :P_FECHA)
+  INTO :NETO, :NO_GRAVADO, :EXENTO, :IVA, :IMPUESTO, :PERCEPCIONES, :PRECIO_UNITARIO;
+
+  RESULTADO = 1; MENSAJE_ERROR = '';
+  SUSPEND;
+END^
+
+SET TERM ; ^
