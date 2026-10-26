@@ -12,3 +12,7 @@ coverage/
 # Config local con credenciales / rutas de la máquina
 **/.mcp.json
 .claude/settings.local.json
+
+# Archivos de trabajo locales (solo se versiona el README)
+workspace/*
+!workspace/README.md
