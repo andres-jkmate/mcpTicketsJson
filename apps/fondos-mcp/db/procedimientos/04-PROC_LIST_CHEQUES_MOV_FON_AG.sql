@@ -1,0 +1,38 @@
+SET TERM ^ ;
+
+CREATE OR ALTER PROCEDURE PROC_LIST_CHEQUES_MOV_FON_AG (
+  P_COD_MOVIMIENTO_FONDO INTEGER
+)
+RETURNS (
+  RESULTADO         SMALLINT,
+  MENSAJE_ERROR     VARCHAR(500),
+  BANCO             VARCHAR(50),
+  SUCURSAL          VARCHAR(50),
+  NRO_CHEQUE        VARCHAR(18),
+  TIPO_CHEQUE       VARCHAR(8),
+  ESTADO_CHEQUE     VARCHAR(25),
+  IMPORTE           NUMERIC(18,3),
+  FECHA_EMISION     DATE,
+  FECHA_VENCIMIENTO DATE,
+  FECHA_COBRO       DATE
+)
+AS
+BEGIN
+/*
+  Nombre: PROC_LIST_CHEQUES_MOV_FON_AG
+  Descripción: Cheques de un movimiento de fondos para ver_movimiento_fondo (fondos-mcp).
+               Envuelve PROC_GET_CHEQUES_X_MOV_FON (el SP del formulario) para agregar el contrato
+               RESULTADO/MENSAJE_ERROR. No valida el usuario: la tool lo llama después de
+               PROC_GET_MOV_FONDO_AG en la misma transacción.
+  Última modificación: 2026-10-26
+*/
+  RESULTADO = 1; MENSAJE_ERROR = '';
+  FOR SELECT C.NOMBRE_BANCO, C.SUCURSAL, C.NRO_CHEQUE, C.TIPO_CHEQUE, C.ESTADO_CHEQUE, C.IMPORTE_CHEQUE,
+             C.FECHA_EMISION, C.FECHA_VENCIMIENTO, C.FECHA_COBRO
+      FROM PROC_GET_CHEQUES_X_MOV_FON(:P_COD_MOVIMIENTO_FONDO) C
+      INTO :BANCO, :SUCURSAL, :NRO_CHEQUE, :TIPO_CHEQUE, :ESTADO_CHEQUE, :IMPORTE,
+           :FECHA_EMISION, :FECHA_VENCIMIENTO, :FECHA_COBRO
+  DO SUSPEND;
+END^
+
+SET TERM ; ^
