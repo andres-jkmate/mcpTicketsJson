@@ -4,17 +4,48 @@ Monorepo de los servidores MCP "v2" de JKMate: pocas tools diseñadas a mano par
 
 Es un repo propio, separado del monorepo Nx `jkmate-mcp`. Usa npm workspaces, sin Nx.
 
+> **Repo congelado.** Este prototipo es el modelo del repo definitivo. Qué aprendimos, qué debe permanecer y la metodología sugerida (diseño guiado por prompts) están en [`LECCIONES.md`](LECCIONES.md).
+
 ## Contenido
 
 | Carpeta | Paquete | Qué es |
 |---|---|---|
 | [`apps/tickets-mcp`](apps/tickets-mcp/README.md) | `@mcp-jkmate/tickets-mcp` | MCP de tickets: 4 tools de lectura (contexto de un ticket, listados de tickets y tareas, resúmenes). Instalación en [`docs/instalacion.md`](apps/tickets-mcp/docs/instalacion.md). |
 | [`apps/comprobantes-prov-mcp`](apps/comprobantes-prov-mcp/README.md) | `@mcp-jkmate/comprobantes-prov-mcp` | MCP de comprobantes de proveedores. Todavía sin tools: se diseñan en un change aparte. |
+| [`apps/fondos-mcp`](apps/fondos-mcp/README.md) | `@mcp-jkmate/fondos-mcp` | MCP de movimientos de fondos. Todavía sin tools: se diseñan en un change aparte. |
 | [`apps/_template-mcp`](apps/_template-mcp/README.md) | `@mcp-jkmate/template-mcp` | Plantilla para crear un MCP nuevo. Compila y se testea con el resto, pero no se instala. |
 | [`packages/core`](packages/core/) | `@mcp-jkmate/core` | Contrato de una tool, wrapper común (validación del input, errores uniformes y log de cada invocación con `idCorrelacion`), servidor MCP, logger Pino con Seq, `Sesion` y validación de la plantilla de descripción. `@mcp-jkmate/core/pruebas` tiene los helpers para los tests de cada app. |
 | [`packages/firebird`](packages/firebird/) | `@mcp-jkmate/firebird` | Pool de `node-firebird`, transacción de solo lectura, errores de conexión (`BASE_NO_DISPONIBLE`), contrato `RESULTADO`/`MENSAJE_ERROR` y conversión de fechas y valores. |
 
 Las especificaciones y los changes están en [`openspec/`](openspec/).
+
+## Dependencias
+
+Las que usan los MCPs al correr:
+
+| Paquete | Dónde | Para qué |
+|---|---|---|
+| [`@modelcontextprotocol/sdk`](https://www.npmjs.com/package/@modelcontextprotocol/sdk) | apps, `core` (peer) | SDK oficial de MCP: servidor, transporte stdio, registro de tools con `outputSchema` y `structuredContent`. |
+| [`zod`](https://zod.dev) | apps, `core` (peer) | Esquemas del input y del output de cada tool. El SDK los convierte a JSON Schema para `tools/list` y `core` los usa para validar el input antes de ejecutar la tool. |
+| [`node-firebird`](https://www.npmjs.com/package/node-firebird) | `firebird`, `tickets-mcp` | Driver de Firebird en JavaScript puro, sin cliente nativo: pool de conexiones, transacciones y llamada a los SP. |
+| [`pino`](https://getpino.io) | apps, `core` (peer) | Logger JSON estructurado. Cada invocación de tool deja un evento con su `idCorrelacion`. Escribe siempre a stderr, y también a Seq si está configurado. Nunca escribe a stdout, que es del protocolo MCP. |
+| [`pino-seq`](https://www.npmjs.com/package/pino-seq) | `core` | Envía los logs de Pino a un servidor Seq cuando está definida `SEQ_URL`. |
+
+`core` declara el SDK de MCP, Zod y Pino como `peerDependencies`. Así, cada app instala una sola copia de cada uno y la comparte con el paquete.
+
+Las de desarrollo:
+
+| Paquete | Dónde | Para qué |
+|---|---|---|
+| [`typescript`](https://www.typescriptlang.org) | raíz | Compilador: `npm run build` con referencias de proyecto (`tsc -b`) y `npm run typecheck`. |
+| [`tsx`](https://tsx.is) | raíz | Corre TypeScript sin compilar: `npm run dev` y los scripts de medición. |
+| [`vitest`](https://vitest.dev) | raíz | Runner de tests: unitarios, de contrato y de integración. |
+| [`eslint`](https://eslint.org), [`@eslint/js`](https://www.npmjs.com/package/@eslint/js), [`typescript-eslint`](https://typescript-eslint.io) | raíz | Linter (`npm run lint`) con las reglas recomendadas de JavaScript y de TypeScript. |
+| [`@types/node`](https://www.npmjs.com/package/@types/node) | raíz | Tipos de la API de Node.js. |
+| [`@anthropic-ai/sdk`](https://www.npmjs.com/package/@anthropic-ai/sdk) | `tickets-mcp` | Cliente de la API de Claude para los scripts que miden al agente contra las tools (`npm run medir:agente`, `estimar:agente`). No se usa en el servidor. |
+| [`ajv`](https://ajv.js.org), [`ajv-formats`](https://www.npmjs.com/package/ajv-formats) | `tickets-mcp` | Validación con JSON Schema de los argumentos que arma el agente en esos mismos scripts. |
+
+Las variables de entorno se cargan con `--env-file-if-exists` de Node, sin `dotenv`.
 
 ## Comandos
 
