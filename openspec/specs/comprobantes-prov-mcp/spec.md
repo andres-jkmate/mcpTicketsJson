@@ -40,13 +40,13 @@ El servidor MUST correr por stdio y MUST tomar su configuración de variables de
 - **WHEN** se arranca el servidor
 - **THEN** el proceso queda esperando mensajes MCP por stdin y no escribe nada en stdout hasta recibir uno
 
-### Requirement: Sin tools hasta su diseño
-Mientras no se especifiquen tools para este servidor, `tools/list` MUST devolver una lista vacía. El servidor MUST NOT publicar la tool de ejemplo de la plantilla ni ninguna tool que dependa de un SP inexistente.
+### Requirement: Tools publicadas
+El servidor MUST publicar en `tools/list` exactamente las tools `preparar_factura_proveedor` y `registrar_factura_proveedor`, especificadas en la capability `registro-factura-proveedor`, y MUST NOT publicar la tool de ejemplo de la plantilla. Sus descripciones MUST seguir la plantilla de cuatro partes de `plataforma-mcp`.
 
-#### Scenario: tools/list vacío
+#### Scenario: tools/list
 - **GIVEN** un cliente MCP conectado al servidor
 - **WHEN** el cliente pide `tools/list`
-- **THEN** la respuesta tiene la lista de tools vacía
+- **THEN** la respuesta tiene exactamente `preparar_factura_proveedor` y `registrar_factura_proveedor`
 
 #### Scenario: Tool desconocida
 - **GIVEN** un cliente MCP conectado al servidor
@@ -54,9 +54,13 @@ Mientras no se especifiquen tools para este servidor, `tools/list` MUST devolver
 - **THEN** el servidor responde con un error de protocolo de tool desconocida
 
 ### Requirement: Códigos de error del servidor
-El servidor MUST declarar los cuatro códigos de error base (`PARAMETRO_INVALIDO`, `NO_AUTORIZADO`, `BASE_NO_DISPONIBLE` y `ERROR_INTERNO`) y MUST NOT declarar códigos propios del dominio hasta que una tool los use.
+El servidor MUST declarar los cuatro códigos de error base (`PARAMETRO_INVALIDO`, `NO_AUTORIZADO`, `BASE_NO_DISPONIBLE` y `ERROR_INTERNO`) y los del dominio que usan sus tools: `COMPROBANTE_DUPLICADO` y `PERIODO_CERRADO`. MUST NOT declarar códigos que ninguna tool use.
 
 #### Scenario: Código del dominio sin declarar
-- **GIVEN** el servidor solo con los códigos base
-- **WHEN** el código del servidor intenta lanzar un error de tool con un código que no es base
+- **GIVEN** el servidor con sus códigos declarados
+- **WHEN** el código del servidor intenta lanzar un error de tool con un código que no está entre ellos
 - **THEN** el typecheck de la app falla
+
+#### Scenario: Enum de códigos
+- **WHEN** un cliente pide `tools/list`
+- **THEN** el enum de `error.codigo` de cada `outputSchema` contiene los cuatro códigos base, `COMPROBANTE_DUPLICADO` y `PERIODO_CERRADO`
